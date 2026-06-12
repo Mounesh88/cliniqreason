@@ -1,0 +1,476 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>CliniqReason — Login</title>
+    <link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;600;700&family=Inter:wght@300;400;500;600&display=swap" rel="stylesheet">
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        :root {
+            --navy:     #0A1628;
+            --darkblue: #1E3A5F;
+            --darker:   #0D2137;
+            --red:      #E63946;
+            --amber:    #F4A261;
+            --green:    #2DC653;
+            --lightblue:#E8F4FD;
+            --white:    #FFFFFF;
+        }
+
+        body {
+            background-color: var(--navy);
+            font-family: 'Inter', sans-serif;
+            min-height: 100vh;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 20px;
+        }
+
+        .login-container {
+            width: 100%;
+            max-width: 420px;
+        }
+
+        .logo-section {
+            text-align: center;
+            margin-bottom: 40px;
+        }
+
+        .logo-icon {
+            font-size: 48px;
+            margin-bottom: 16px;
+        }
+
+        .logo-title {
+            font-family: 'IBM Plex Mono', monospace;
+            font-size: 28px;
+            font-weight: 700;
+            color: var(--white);
+            letter-spacing: -0.5px;
+        }
+
+        .logo-title span {
+            color: var(--green);
+        }
+
+        .logo-subtitle {
+            font-size: 13px;
+            color: var(--lightblue);
+            margin-top: 8px;
+            opacity: 0.8;
+        }
+
+        .foundry-badge {
+            display: inline-flex;
+            align-items: center;
+            gap: 6px;
+            background: var(--darkblue);
+            border: 1px solid var(--green);
+            border-radius: 20px;
+            padding: 4px 12px;
+            margin-top: 12px;
+            font-size: 11px;
+            color: var(--green);
+            font-family: 'IBM Plex Mono', monospace;
+        }
+
+        .login-card {
+            background: var(--darkblue);
+            border-radius: 16px;
+            padding: 36px;
+            border: 1px solid rgba(255,255,255,0.08);
+        }
+
+        .card-title {
+            font-family: 'IBM Plex Mono', monospace;
+            font-size: 13px;
+            color: var(--lightblue);
+            opacity: 0.7;
+            letter-spacing: 2px;
+            text-transform: uppercase;
+            margin-bottom: 24px;
+        }
+
+        .form-group {
+            margin-bottom: 20px;
+        }
+
+        .form-label {
+            display: block;
+            font-size: 12px;
+            font-weight: 500;
+            color: var(--lightblue);
+            margin-bottom: 8px;
+            letter-spacing: 0.5px;
+        }
+
+        .form-input {
+            width: 100%;
+            background: var(--darker);
+            border: 1px solid rgba(255,255,255,0.1);
+            border-radius: 8px;
+            padding: 12px 16px;
+            font-size: 14px;
+            color: var(--white);
+            font-family: 'IBM Plex Mono', monospace;
+            transition: border-color 0.2s;
+            outline: none;
+        }
+
+        .form-input:focus {
+            border-color: var(--green);
+            box-shadow: 0 0 0 3px rgba(45, 198, 83, 0.1);
+        }
+
+        .form-input::placeholder {
+            color: rgba(255,255,255,0.25);
+        }
+
+        /* Field error state */
+        .form-input.error {
+            border-color: var(--red);
+            box-shadow: 0 0 0 3px rgba(230, 57, 70, 0.1);
+        }
+
+        .field-error {
+            font-size: 11px;
+            color: var(--red);
+            margin-top: 6px;
+            display: none;
+        }
+
+        .login-btn {
+            width: 100%;
+            background: var(--red);
+            color: var(--white);
+            border: none;
+            border-radius: 8px;
+            padding: 14px;
+            font-size: 15px;
+            font-weight: 600;
+            font-family: 'Inter', sans-serif;
+            cursor: pointer;
+            transition: all 0.2s;
+            margin-top: 8px;
+            letter-spacing: 0.5px;
+        }
+
+        .login-btn:hover {
+            background: #c1121f;
+            transform: translateY(-1px);
+        }
+
+        .login-btn:active {
+            transform: translateY(0);
+        }
+
+        /* WCAG 2.1 keyboard focus */
+        .login-btn:focus {
+            outline: 2px solid var(--green);
+            outline-offset: 2px;
+        }
+
+        .login-btn.loading {
+            opacity: 0.7;
+            cursor: not-allowed;
+        }
+
+        .error-msg {
+            background: rgba(230, 57, 70, 0.1);
+            border: 1px solid var(--red);
+            border-radius: 8px;
+            padding: 10px 14px;
+            font-size: 13px;
+            color: var(--red);
+            margin-bottom: 16px;
+            display: none;
+        }
+
+        /* Forgot password */
+        .forgot {
+            text-align: center;
+            margin-top: 16px;
+        }
+
+        .forgot a {
+            font-size: 12px;
+            color: var(--lightblue);
+            opacity: 0.6;
+            text-decoration: none;
+            transition: opacity 0.2s;
+        }
+
+        .forgot a:hover {
+            opacity: 1;
+            color: var(--green);
+        }
+
+        .disclaimer {
+            text-align: center;
+            margin-top: 24px;
+            padding-top: 24px;
+            border-top: 1px solid rgba(255,255,255,0.06);
+        }
+
+        .disclaimer p {
+            font-size: 11px;
+            color: var(--lightblue);
+            opacity: 0.5;
+            line-height: 1.6;
+        }
+
+        .version {
+            text-align: center;
+            margin-top: 16px;
+            font-family: 'IBM Plex Mono', monospace;
+            font-size: 10px;
+            color: rgba(255,255,255,0.2);
+        }
+
+        /* Mobile responsive */
+        @media (max-width: 480px) {
+            .login-card {
+                padding: 24px;
+            }
+            .logo-title {
+                font-size: 24px;
+            }
+            .logo-icon {
+                font-size: 36px;
+            }
+        }
+    </style>
+</head>
+<body>
+
+<div class="login-container">
+
+    <!-- Logo -->
+    <div class="logo-section">
+        <div class="logo-icon">🏥</div>
+        <div class="logo-title">
+            Cliniq<span>Reason</span>
+        </div>
+        <div class="logo-subtitle">
+            Clinical Decision Reasoning Agent
+        </div>
+        <div class="foundry-badge">
+            ⚡ Powered by Microsoft Foundry IQ
+        </div>
+    </div>
+
+    <!-- Login Card -->
+    <div class="login-card">
+        <div class="card-title">Clinician Access</div>
+
+        <!-- Error Message -->
+        <div class="error-msg" id="errorMsg"></div>
+
+        <!-- CSRF Token -->
+        <input type="hidden" id="csrfToken" value="{{ csrf_token }}">
+
+        <!-- Doctor ID -->
+        <div class="form-group">
+            <label class="form-label">DOCTOR ID</label>
+            <input
+                type="text"
+                class="form-input"
+                id="doctorId"
+                placeholder="DR-XXXX-XXXX"
+                autocomplete="off"
+                maxlength="20"
+            >
+            <div class="field-error" id="doctorIdError">
+                Format must be DR-XXXX-XXXX
+            </div>
+        </div>
+
+        <!-- Password -->
+        <div class="form-group">
+            <label class="form-label">PASSWORD</label>
+            <input
+                type="password"
+                class="form-input"
+                id="password"
+                placeholder="••••••••••••"
+                maxlength="50"
+            >
+            <div class="field-error" id="passwordError">
+                Password must be at least 6 characters
+            </div>
+        </div>
+
+        <button class="login-btn" id="loginBtn" onclick="handleLogin()">
+            ACCESS SYSTEM
+        </button>
+
+        <!-- Forgot Password -->
+        <div class="forgot">
+            <a href="/reset">Forgot password?</a>
+        </div>
+
+        <!-- Disclaimer -->
+        <div class="disclaimer">
+            <p>
+                ⚠️ Authorized clinical personnel only.<br>
+                Not a medical device. Decision support only.<br>
+                Final judgment rests with the treating clinician.
+            </p>
+        </div>
+    </div>
+
+    <!-- Version -->
+    <div class="version">
+        CliniqReason v1.0.0 — Agents League Hackathon 2026
+    </div>
+
+</div>
+
+<script>
+    // Doctor ID pattern validation
+    const DOCTOR_ID_PATTERN = /^DR-[A-Z0-9]{3,8}-[A-Z0-9]{3,8}$/;
+
+    function validateFields() {
+        const doctorId = document.getElementById('doctorId').value.trim();
+        const password = document.getElementById('password').value.trim();
+        const doctorIdInput = document.getElementById('doctorId');
+        const passwordInput = document.getElementById('password');
+        const doctorIdError = document.getElementById('doctorIdError');
+        const passwordError = document.getElementById('passwordError');
+
+        let valid = true;
+
+        // Validate Doctor ID format
+        if (!DOCTOR_ID_PATTERN.test(doctorId)) {
+            doctorIdInput.classList.add('error');
+            doctorIdError.style.display = 'block';
+            valid = false;
+        } else {
+            doctorIdInput.classList.remove('error');
+            doctorIdError.style.display = 'none';
+        }
+
+        // Validate password length
+        if (password.length < 6) {
+            passwordInput.classList.add('error');
+            passwordError.style.display = 'block';
+            valid = false;
+        } else {
+            passwordInput.classList.remove('error');
+            passwordError.style.display = 'none';
+        }
+
+        return valid;
+    }
+
+    function handleLogin() {
+        console.log('Login clicked');
+        const errorMsg = document.getElementById('errorMsg');
+        const btn = document.getElementById('loginBtn');
+        const csrfToken = document.getElementById('csrfToken').value;
+
+        // Clear previous errors
+        errorMsg.style.display = 'none';
+
+        // Validate fields
+        if (!validateFields()) return;
+
+        const doctorId = document.getElementById('doctorId').value.trim();
+        const password = document.getElementById('password').value.trim();
+
+        // Loading state
+        btn.textContent = 'AUTHENTICATING...';
+        btn.classList.add('loading');
+        btn.disabled = true;
+
+        // Send to Flask
+        fetch('/login', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+                'X-CSRFToken': csrfToken
+            },
+            body: JSON.stringify({
+                doctor_id: doctorId,
+                password: password
+            })
+        })
+        .then(res => res.json())
+        .then(data => {
+            if (data.success) {
+                btn.textContent = 'ACCESS GRANTED';
+                btn.style.background = 'var(--green)';
+                setTimeout(() => {
+                    window.location.href = '/input';
+                }, 500);
+            } else {
+                errorMsg.textContent = 'Invalid credentials. Please try again.';
+                errorMsg.style.display = 'block';
+                btn.textContent = 'ACCESS SYSTEM';
+                btn.classList.remove('loading');
+                btn.disabled = false;
+            }
+        })
+        .catch(err => {
+            errorMsg.textContent = 'Connection error. Please try again.';
+            errorMsg.style.display = 'block';
+            btn.textContent = 'ACCESS SYSTEM';
+            btn.classList.remove('loading');
+            btn.disabled = false;
+        });
+    }
+
+    // Real time validation on input
+    
+    document.getElementById('doctorId').addEventListener('input', function() {
+        this.value = this.value.toUpperCase();
+        const error = document.getElementById('doctorIdError');
+        const input = document.getElementById('doctorId');
+        if (this.value.length > 0) {
+            if (!DOCTOR_ID_PATTERN.test(this.value)) {
+                input.classList.add('error');
+                error.style.display = 'block';
+            } else {
+                input.classList.remove('error');
+                error.style.display = 'none';
+            }
+         } else {
+            input.classList.remove('error');
+            error.style.display = 'none';
+        }
+    });
+
+
+    document.getElementById('password').addEventListener('input', function() {
+        const error = document.getElementById('passwordError');
+        const input = document.getElementById('password');
+        if (this.value.length > 0) {
+            if (this.value.length < 6) {
+                input.classList.add('error');
+                error.style.display = 'block';
+            } else {
+                input.classList.remove('error');
+                error.style.display = 'none';
+            }
+        } else {
+            input.classList.remove('error');
+            error.style.display = 'none';
+        }
+    
+});
+
+    // Enter key support
+    document.addEventListener('keypress', function(e) {
+        if (e.key === 'Enter') handleLogin();
+    });
+</script>
+
+</body>
+</html>
