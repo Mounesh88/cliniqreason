@@ -32,13 +32,29 @@ def assess_risk(
 
     prompt = f"""
     You are a clinical risk assessment specialist.
-    
+
     YOUR ONLY JOB:
     Calculate HEART score and assign triage level.
     DO NOT analyze symptoms.
     DO NOT check drugs.
-    DO NOT recommend treatments.
-    
+    DO NOT recommend treatments or medications.
+    DO NOT reinterpret or change diagnoses from Agent 1.
+    Use diagnoses from Agent 1 ONLY as context.
+
+    SAFETY CONSTRAINTS — MUST FOLLOW:
+    - Use official HEART components ONLY:
+      History, ECG, Age, Risk factors, Troponin.
+    - HEART score interpretation:
+      0-3  = LOW risk      (typically <3% MACE at 6 weeks)
+      4-6  = MODERATE risk (intermediate risk)
+      7-10 = HIGH risk     (high short-term risk)
+    - If troponin is missing or unclear, say:
+      "Troponin data insufficient for accurate HEART scoring."
+    - Do NOT reinterpret or change diagnoses from Agent 1.
+      Use them only as context.
+    - Do NOT recommend medications or treatments.
+    - MACE probability must follow HEART score ranges strictly.
+
     PATIENT DATA:
     ─────────────────────────────
     Age             : {age}
@@ -47,44 +63,51 @@ def assess_risk(
     ECG Findings    : {ecg}
     Risk Factors    : {risk_factors}
     Troponin        : {troponin}
-    
+
     VITAL SIGNS:
     BP              : {bp}
     HR              : {hr}
     O2 Saturation   : {o2}
     Resp Rate       : {rr}
-    
-    TOP DIAGNOSES FROM SYMPTOM ANALYSIS:
+
+    DIAGNOSES FROM AGENT 1 (context only):
     {symptom_diagnoses}
-    
-    Calculate and return ONLY this:
-    
+
+    Return ONLY in this exact format:
+
     HEART SCORE CALCULATION:
     H - History        : [0/1/2] - [reason]
     E - ECG            : [0/1/2] - [reason]
     A - Age            : [0/1/2] - [reason]
     R - Risk Factors   : [0/1/2] - [reason]
-    T - Troponin       : [0/1/2] - [reason]
+    T - Troponin       : [0/1/2 or "Insufficient data"]
     ─────────────────────────
     TOTAL HEART SCORE  : [0-10]
-    
+
     RISK LEVEL:
     [LOW (0-3) / MODERATE (4-6) / HIGH (7-10)]
-    
+
     MACE PROBABILITY:
-    [% risk of major adverse cardiac event in 6 weeks]
-    
+    [Based strictly on HEART score range:
+     LOW: typically <3% at 6 weeks
+     MODERATE: intermediate risk
+     HIGH: high short-term risk]
+
     TRIAGE DECISION:
     [IMMEDIATE ER / URGENT / OUTPATIENT]
-    
+
     VITAL SIGNS ASSESSMENT:
     - [Critical finding from vitals]
-    
+
     HEMODYNAMIC STATUS:
     [Stable / Unstable / Critical]
-    
+
+    DATA QUALITY CHECK:
+    - [Flag any missing data affecting score accuracy]
+
     SOURCE:
-    [AHA/ACC Guideline reference]
+    [AHA/ACC Guideline reference or
+    "Source: Not explicitly specified" if unsure]
     """
 
     response = client.chat.completions.create(
@@ -95,8 +118,11 @@ def assess_risk(
                 "content": """You are an expert emergency medicine risk assessor.
                 Your ONLY job is HEART score calculation and triage.
                 Follow AHA/ACC 2022 Chest Pain Guidelines strictly.
-                Be precise with scoring.
-                Patient safety is absolute priority."""
+                Use ONLY official HEART components.
+                Never recommend medications or treatments.
+                Never change Agent 1 diagnoses.
+                If troponin data is missing say so clearly.
+                MACE probability must match HEART score ranges exactly."""
             },
             {"role": "user", "content": prompt}
         ],
@@ -121,7 +147,11 @@ if __name__ == "__main__":
         hr="110 bpm",
         o2="94%",
         rr="22 breaths/min",
-        symptom_diagnoses="1. Acute MI 70% 2. Unstable Angina 15% 3. Aortic Dissection 5%"
+        symptom_diagnoses="""
+        1. Acute coronary syndrome - 85% - suggestive of
+        2. Acute aortic dissection - 10% - possible
+        3. Pulmonary embolism - 5% - possible
+        """
     )
     print("=" * 50)
     print("TOOL 2 — RISK ASSESSOR OUTPUT")

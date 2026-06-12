@@ -30,14 +30,32 @@ def match_protocol(
 
     prompt = f"""
     You are a clinical protocol specialist.
-    
+
     YOUR ONLY JOB:
     Match working diagnosis to clinical protocol.
     Recommend specific labs, imaging, and actions.
     DO NOT analyze symptoms.
     DO NOT calculate risk scores.
     DO NOT check drug interactions.
-    
+    DO NOT recommend specific drug names or doses.
+
+    SAFETY CONSTRAINTS — MUST FOLLOW:
+    - Do NOT recommend specific drug names or doses.
+      Only actions, labs, imaging, referrals, monitoring.
+    - If working diagnosis does not clearly match ACS, PE,
+      stroke, or sepsis, say:
+      "No single standard protocol clearly applies;
+      suggest senior clinician review."
+    - If any section has no applicable items, write:
+      "None specifically recommended based on provided data."
+    - Do NOT contradict drug alerts from Agent 3.
+      If standard protocol conflicts with drug alert, say:
+      "Standard protocol suggests X, but Agent 3 flagged
+      a safety concern — senior clinician review required."
+    - Never invent guideline names.
+      If unsure of source write:
+      "Source: Not explicitly specified."
+
     PATIENT DATA:
     ─────────────────────────────
     Working Diagnosis : {diagnosis}
@@ -47,46 +65,53 @@ def match_protocol(
     Gender            : {gender}
     Medical History   : {history}
     Current Vitals    : {vitals}
-    Drug Alerts       : {drug_alerts}
-    
-    Match to protocol and return ONLY this:
-    
+
+    DRUG ALERTS FROM AGENT 3:
+    {drug_alerts}
+
+    Return ONLY in this exact format:
+
     MATCHED PROTOCOL:
-    [Protocol name and version]
-    
+    [Protocol name and version
+    or "No single standard protocol clearly applies"]
+
     IMMEDIATE ACTIONS (Next 0-10 minutes):
-    □ [Action 1]
-    □ [Action 2]
-    □ [Action 3]
-    
+    □ [Action] OR None specifically recommended
+
     URGENT ACTIONS (Next 10-60 minutes):
-    □ [Action 1]
-    □ [Action 2]
-    
+    □ [Action] OR None specifically recommended
+
     RECOMMENDED LABS:
     □ [Lab test] - [Why needed]
-    □ [Lab test] - [Why needed]
-    
+      OR None specifically recommended
+
     RECOMMENDED IMAGING:
     □ [Imaging] - [Why needed]
-    □ [Imaging] - [Why needed]
-    
+      OR None specifically recommended
+
     SPECIALIST REFERRAL:
-    □ [Specialist] - [Urgency level]
-    
+    □ [Specialist] - [Urgency]
+      OR None specifically recommended
+
     MONITORING REQUIREMENTS:
     □ [What to monitor] - [Frequency]
-    
+      OR None specifically recommended
+
     TREATMENT TARGETS:
-    - [Target 1 with specific value]
-    - [Target 2 with specific value]
-    
+    - [Target with specific value]
+      OR None specifically recommended
+
+    DRUG ALERT CONFLICTS:
+    - [Any conflict between protocol and Agent 3 alerts]
+      OR None identified
+
     FOLLOW UP TIMELINE:
     - Reassess in: [timeframe]
     - Disposition: [admit/discharge/observe]
-    
+
     SOURCE:
-    [Specific guideline with year]
+    [Specific guideline with year
+    or "Source: Not explicitly specified"]
     """
 
     response = client.chat.completions.create(
@@ -95,14 +120,16 @@ def match_protocol(
             {
                 "role": "system",
                 "content": """You are an expert clinical protocol specialist.
-                Your ONLY job is matching diagnosis to clinical protocols.
-                Use ONLY the latest guidelines:
+                Your ONLY job is matching diagnosis to protocols.
+                Use ONLY latest guidelines:
                 - AHA/ACC 2022 ACS Guidelines
                 - Surviving Sepsis Campaign 2026
                 - AHA 2026 Stroke Guidelines
                 - ESC PE Guidelines 2024
-                Be specific with actions, labs, imaging.
-                Time-critical actions must be precise."""
+                Never recommend drug names or doses.
+                Always respect drug alerts from Agent 3.
+                If protocol conflicts with drug alert flag it explicitly.
+                Never invent guideline names."""
             },
             {"role": "user", "content": prompt}
         ],
@@ -117,14 +144,17 @@ def match_protocol(
 
 if __name__ == "__main__":
     result = match_protocol(
-        diagnosis="Acute Myocardial Infarction — High likelihood 70%",
-        risk_level="HIGH — HEART Score 10",
+        diagnosis="Acute coronary syndrome — suggestive of — 85%",
+        risk_level="HIGH — HEART Score 10/10",
         triage="IMMEDIATE ER",
         age=65,
         gender="Male",
         history="Hypertension, Diabetes, Previous MI, CABG",
         vitals="BP 90/60, HR 110, O2 94%, RR 22",
-        drug_alerts="MAJOR: Warfarin + Aspirin bleeding risk"
+        drug_alerts="""
+        MAJOR: Warfarin + Aspirin = Life threatening hemorrhage risk
+        MAJOR: Warfarin + Lisinopril = Enhanced anticoagulant effect
+        """
     )
     print("=" * 50)
     print("TOOL 4 — PROTOCOL MATCHER OUTPUT")

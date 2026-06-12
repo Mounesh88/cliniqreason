@@ -21,19 +21,33 @@ def check_drug_interactions(
     """
     MCP Tool 3 — Drug Interaction Checker
     ONE JOB ONLY:
-    Check medications for interactions and contraindications
+    Check medications for interactions
+    and contraindications
     Nothing else
     """
 
     prompt = f"""
     You are a clinical pharmacist specializing in emergency medicine.
-    
+
     YOUR ONLY JOB:
     Check drug interactions and contraindications.
     DO NOT analyze symptoms.
     DO NOT calculate risk scores.
     DO NOT recommend clinical protocols.
-    
+    DO NOT recommend treatment plans or dosing.
+
+    SAFETY CONSTRAINTS — MUST FOLLOW:
+    - Never invent medications, interactions, or mechanisms.
+      If unsure, say:
+      "Insufficient data to determine interaction."
+    - If no interactions exist in a category, explicitly write:
+      "None found"
+    - Do NOT recommend treatment plans or dosing.
+    - If allergy relevance is unclear, say:
+      "No clear cross-reactivity identified based on provided data."
+    - Only flag interactions with known clinical evidence.
+    - Never guess or assume interactions without evidence.
+
     PATIENT DATA:
     ─────────────────────────────
     Age                  : {age}
@@ -42,39 +56,52 @@ def check_drug_interactions(
     Current Medications  : {current_medications}
     Known Allergies      : {allergies}
     Working Diagnosis    : {diagnosis}
-    
-    Check and return ONLY this:
-    
+
+    Return ONLY in this exact format:
+
     CURRENT MEDICATION REVIEW:
-    - [Medication] - [Dose check] - [Safe/Caution/Danger]
-    
+    - [Medication] - [Safe/Caution/Danger]
+
     DRUG-DRUG INTERACTIONS DETECTED:
+
     Severity: MAJOR
     - [Drug 1] + [Drug 2] = [Interaction] - [Clinical consequence]
-    
+      OR: None found
+
     Severity: MODERATE
     - [Drug 1] + [Drug 2] = [Interaction] - [Clinical consequence]
-    
+      OR: None found
+
     Severity: MINOR
     - [Drug 1] + [Drug 2] = [Interaction] - [Clinical consequence]
-    
+      OR: None found
+
     CONTRAINDICATIONS FOR WORKING DIAGNOSIS:
     - [Drug that must NOT be given and why]
-    
+      OR: None identified
+
     ALLERGY ALERTS:
-    - [Cross-reactivity or allergy concern]
-    
+    - [Cross-reactivity concern]
+      OR: No clear cross-reactivity identified based on provided data
+
     DOSE ADJUSTMENTS NEEDED:
-    - [Drug requiring adjustment based on age/condition]
-    
+    - [Drug requiring adjustment and reason]
+      OR: None identified
+
     SAFE ALTERNATIVES:
     - [Safer option if dangerous interaction exists]
-    
+      OR: None specifically indicated
+
     RENAL/HEPATIC CONSIDERATIONS:
-    - [Any dose modification needed]
-    
+    - [Modification needed]
+      OR: None identified
+
+    DATA QUALITY CHECK:
+    - [Flag any missing medication data]
+
     SOURCE:
-    [FDA Drug Database / RxNorm / NIH reference]
+    [FDA Drug Database / RxNorm / NIH reference
+    or "Source: Not explicitly specified" if unsure]
     """
 
     response = client.chat.completions.create(
@@ -86,8 +113,10 @@ def check_drug_interactions(
                 Your ONLY job is drug interaction and contraindication checking.
                 Reference FDA Drug Database, RxNorm, and NIH standards.
                 Flag ALL major interactions immediately.
-                Patient safety is absolute priority.
-                Never miss a life threatening drug interaction."""
+                Never invent interactions or mechanisms.
+                If unsure say so clearly.
+                Never recommend treatments or dosing.
+                Patient safety is absolute priority."""
             },
             {"role": "user", "content": prompt}
         ],
@@ -104,13 +133,13 @@ if __name__ == "__main__":
     result = check_drug_interactions(
         current_medications="Warfarin 5mg, Metformin 500mg, Lisinopril 10mg, Aspirin 81mg",
         allergies="Penicillin",
-        diagnosis="Acute Myocardial Infarction",
+        diagnosis="Acute coronary syndrome — suggestive of",
         age=65,
         gender="Male",
         history="Hypertension, Diabetes Type 2, Previous MI 2020, CABG 2020"
     )
     print("=" * 50)
-    print("TOOL 3 — DRUG INTERACTION CHECKER OUTPUT")
+    print("TOOL 3 — DRUG CHECKER OUTPUT")
     print("=" * 50)
     print(result["result"])
     print("=" * 50)

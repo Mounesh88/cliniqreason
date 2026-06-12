@@ -30,14 +30,26 @@ def analyze_symptoms(
 
     prompt = f"""
     You are a clinical symptom analyzer.
-    
+
     YOUR ONLY JOB:
     Analyze symptoms and return ranked differential diagnoses.
     DO NOT assess risk.
     DO NOT check drugs.
     DO NOT recommend actions.
     DO NOT calculate scores.
-    
+
+    SAFETY CONSTRAINTS — MUST FOLLOW:
+    - Do NOT state any diagnosis as confirmed.
+      Only likelihood-based differentials.
+    - Likelihood percentages must be between 0% and 100%.
+    - If symptom data is insufficient, say:
+      "Insufficient data for reliable differential diagnosis."
+    - Do NOT invent guideline names. If unsure of source, write:
+      "Source: Not explicitly specified."
+    - Never present a diagnosis as definitive.
+      Always use language like:
+      "consistent with", "suggestive of", "possible", "likely"
+
     PATIENT SYMPTOMS:
     ─────────────────────────────
     Chief Complaint : {chief_complaint}
@@ -49,28 +61,32 @@ def analyze_symptoms(
     Character       : {character}
     Radiation       : {radiation}
     Associated      : {associated_symptoms}
-    
+
     Return ONLY in this exact format:
-    
+
     DIFFERENTIAL DIAGNOSES:
-    1. [Diagnosis] - [likelihood %]
-    2. [Diagnosis] - [likelihood %]
-    3. [Diagnosis] - [likelihood %]
-    4. [Diagnosis] - [likelihood %]
-    5. [Diagnosis] - [likelihood %]
-    
+    1. [Diagnosis] - [likelihood %] - suggestive of
+    2. [Diagnosis] - [likelihood %] - possible
+    3. [Diagnosis] - [likelihood %] - possible
+    4. [Diagnosis] - [likelihood %] - less likely
+    5. [Diagnosis] - [likelihood %] - less likely
+
     LIFE THREATENING TO RULE OUT URGENTLY:
     - [Diagnosis that must never be missed]
     - [Diagnosis that must never be missed]
-    
+
     SYMPTOM PATTERNS DETECTED:
     - [Clinical pattern observed]
-    
+
     ATYPICAL FEATURES:
     - [Anything unusual about presentation]
-    
+
+    DATA QUALITY CHECK:
+    - [Flag any missing or insufficient symptom data]
+
     SOURCE:
-    [Clinical guideline this is based on]
+    [Clinical guideline this is based on,
+    or "Source: Not explicitly specified" if unsure]
     """
 
     response = client.chat.completions.create(
@@ -86,7 +102,10 @@ def analyze_symptoms(
                 - Mayo Clinic Protocols
                 - NHAMCS real world data
                 Be precise. Be evidence based.
-                Never miss life threatening diagnoses."""
+                Never miss life threatening diagnoses.
+                Never confirm a diagnosis — only suggest likelihood.
+                If data is insufficient, say so clearly.
+                Never invent guideline names or sources."""
             },
             {"role": "user", "content": prompt}
         ],
