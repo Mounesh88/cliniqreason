@@ -76,7 +76,11 @@ def match_protocol(
     or "No single standard protocol clearly applies"]
 
     IMMEDIATE ACTIONS (Next 0-10 minutes):
-    □ [Action] OR None specifically recommended
+    □ [Specific action — be precise]
+    You MUST provide at least 3 immediate actions
+    for HIGH or MODERATE risk patients.
+    Only write "None specifically recommended"
+    if risk level is LOW.
 
     URGENT ACTIONS (Next 10-60 minutes):
     □ [Action] OR None specifically recommended
