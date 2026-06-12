@@ -1,0 +1,44 @@
+# Environment variables - NEVER share these
+.env
+.env.local
+.env.production
+
+# Virtual environment
+venv/
+env/
+ENV/
+
+# Python
+__pycache__/
+*.pyc
+*.pyo
+*.pyd
+*.egg-info
+dist/
+build/
+
+# Database
+*.db
+*.sqlite
+*.sqlite3
+
+# VS Code
+.vscode/
+*.code-workspace
+
+# Azure
+.azure/
+*.publishsettings
+
+# Logs
+*.log
+logs/
+
+# OS files
+.DS_Store
+Thumbs.db
+desktop.ini
+
+# Audit logs (contains patient data)
+audit/*.json
+audit/*.csv
