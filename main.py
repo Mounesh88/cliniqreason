@@ -8,6 +8,10 @@ sys.path.append(os.path.dirname(os.path.abspath(__file__)))
 
 load_dotenv()
 
+# Initialize database tables on startup
+from database.db import create_tables
+create_tables()
+
 app = Flask(
     __name__,
     template_folder='ui/templates',
