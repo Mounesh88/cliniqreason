@@ -55,7 +55,8 @@ def create_tables():
             reasoning_chain TEXT,
             recommendations TEXT,
             sources TEXT,
-            created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+            created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+            final_output TEXT
         )
     ''')
 
