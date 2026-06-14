@@ -4,11 +4,17 @@ from dotenv import load_dotenv
 
 load_dotenv()
 
-client = AzureOpenAI(
-    azure_endpoint=os.getenv("AZURE_ENDPOINT"),
-    api_key=os.getenv("AZURE_API_KEY"),
-    api_version="2024-12-01-preview"
-)
+_azure_client = None
+
+def get_azure_client():
+    global _azure_client
+    if _azure_client is None:
+        _azure_client = AzureOpenAI(
+            azure_endpoint=os.getenv("AZURE_ENDPOINT"),
+            api_key=os.getenv("AZURE_API_KEY"),
+            api_version="2024-12-01-preview"
+        )
+    return _azure_client
 
 def analyze_symptoms(
     chief_complaint: str,
@@ -89,7 +95,7 @@ def analyze_symptoms(
     or "Source: Not explicitly specified" if unsure]
     """
 
-    response = client.chat.completions.create(
+    response = get_azure_client().chat.completions.create(
         model=os.getenv("AZURE_MODEL"),
         messages=[
             {
