@@ -31,6 +31,9 @@ TOOL_VERSIONS = {
 # ─────────────────────────────────────────
 # SETUP LOGGING
 # ─────────────────────────────────────────
+import os as _os
+_os.makedirs("audit", exist_ok=True)
+
 logging.basicConfig(
     level=logging.INFO,
     format="%(asctime)s [%(levelname)s] %(message)s",
