@@ -253,11 +253,15 @@ def output():
         row = cursor.fetchone()
         conn.close()
         if row:
+            chain = json.loads(row[7]) if row[7] else {}
+            exec_times = chain.get('execution_times', {})
+            total_time = round(sum(exec_times.values()), 1) if exec_times else None
+
             result = {
                 'session_id': row[0],
                 'final_report': row[8],
-                'reasoning_chain': json.loads(row[7]) if row[7] else {},
-                'total_time': None
+                'reasoning_chain': chain,
+                'total_time': total_time
             }
             vitals_str = row[4] or ''
             import re
