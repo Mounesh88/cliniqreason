@@ -15,8 +15,16 @@ app = Flask(
 )
 app.secret_key = os.getenv("SECRET_KEY", "cliniqreason-secret-key-2026")
 app.config['SESSION_TYPE'] = 'filesystem'
+app.config['PERMANENT_SESSION_LIFETIME'] = 3600
 app.config['MAX_CONTENT_LENGTH'] = 16 * 1024 * 1024
-Session(app)
+
+import os as _os
+_os.makedirs('flask_session', exist_ok=True)
+
+try:
+    Session(app)
+except Exception as e:
+    print(f"Warning: Flask-Session failed: {e}")
 # ─────────────────────────────────────────
 # SCREEN 1 — LOGIN
 # ─────────────────────────────────────────
