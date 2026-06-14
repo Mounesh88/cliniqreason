@@ -18,13 +18,12 @@ app.config['SESSION_TYPE'] = 'filesystem'
 app.config['PERMANENT_SESSION_LIFETIME'] = 3600
 app.config['MAX_CONTENT_LENGTH'] = 16 * 1024 * 1024
 
-import os as _os
-_os.makedirs('flask_session', exist_ok=True)
-
 try:
+    os.makedirs('flask_session', exist_ok=True)
     Session(app)
+    print('Flask-Session initialized OK', flush=True)
 except Exception as e:
-    print(f"Warning: Flask-Session failed: {e}")
+    print(f'Flask-Session failed: {e}', flush=True)
 # ─────────────────────────────────────────
 # SCREEN 1 — LOGIN
 # ─────────────────────────────────────────
