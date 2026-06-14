@@ -108,7 +108,7 @@ def call_with_timeout(func, timeout_seconds=30, **kwargs):
 # ─────────────────────────────────────────
 # FEATURE 4 — RETRY WITH TIMEOUT
 # ─────────────────────────────────────────
-def call_with_retry(func, max_retries=3, timeout=30, **kwargs):
+def call_with_retry(func, max_retries=2, timeout=60, **kwargs):
     """
     Retry LLM calls with timeout
     """
@@ -123,7 +123,7 @@ def call_with_retry(func, max_retries=3, timeout=30, **kwargs):
             logger.warning(f"Attempt {attempt} failed: {str(e)}")
             if attempt == max_retries:
                 raise e
-            time.sleep(2 * attempt)
+            time.sleep(5 * attempt)
 
 # ─────────────────────────────────────────
 # HELPER — Extract field from tool output
@@ -151,36 +151,25 @@ def sanity_check(results: dict) -> list:
 
     symptom = results.get("symptom_analysis", "").lower()
     risk = results.get("risk_assessment", "").lower()
+
+    # Check: Low risk diagnosis but high HEART score
+    if "gerd" in symptom and "10" in risk:
+        warnings.append(
+            "Inconsistency: GERD suggested by Tool 1 "
+            "but HEART score 10 from Tool 2"
+        )
+
+    # Check: High risk diagnosis but low HEART score
+    if "acute coronary" in symptom and "low" in risk:
+        warnings.append(
+            "Inconsistency: ACS suggested by Tool 1 "
+            "but LOW risk from Tool 2"
+        )
+
+    # Check: Drug conflict not in protocol
     drug = results.get("drug_interactions", "").lower()
     protocol = results.get("protocol_match", "").lower()
 
-    # Extract FIRST diagnosis only
-    first_diagnosis = ""
-    for line in symptom.splitlines():
-        if line.strip().startswith("1."):
-            first_diagnosis = line.lower()
-            break
-
-    # Check: GERD is TOP diagnosis AND ACS absent AND high HEART score
-    if "gerd" in first_diagnosis:
-        if "acute coronary" not in symptom:
-            if any(score in risk for score in ["7/10", "8/10", "9/10", "10/10"]):
-                warnings.append(
-                    "Inconsistency: GERD as top diagnosis "
-                    "but high HEART score detected — "
-                    "senior clinician review required"
-                )
-
-    # Check: ACS is TOP diagnosis but LOW risk
-    if any(term in first_diagnosis for term in ["acute coronary", "myocardial"]):
-        if "low (0-3)" in risk or "low risk" in risk:
-            if "high" not in risk:
-                warnings.append(
-                    "Inconsistency: ACS as top diagnosis "
-                    "but LOW HEART score — verify clinical data"
-                )
-
-    # Check: MAJOR drug interaction not addressed in protocol
     if "major" in drug and "drug alert" not in protocol:
         warnings.append(
             "Inconsistency: MAJOR drug interaction in Tool 3 "
@@ -191,7 +180,7 @@ def sanity_check(results: dict) -> list:
         for w in warnings:
             logger.warning(f"[SANITY CHECK] {w}")
     else:
-        logger.info("[SANITY CHECK] No inconsistencies [OK]")
+        logger.info("[SANITY CHECK] No inconsistencies detected [OK]")
 
     return warnings
 
@@ -376,17 +365,15 @@ def run_clinical_assessment(patient_data: dict) -> dict:
         try:
             symptom_result = call_with_retry(
                 analyze_symptoms,
-                chief_complaint=patient_data.get("chief_complaint"),
-                age=patient_data.get("age"),
-                gender=patient_data.get("gender"),
+                chief_complaint=patient_data.get("chief_complaint", "Not provided"),
+                age=patient_data.get("age", 0),
+                gender=patient_data.get("gender", "Not provided"),
                 onset=patient_data.get("onset", "Not provided"),
                 duration=patient_data.get("duration", "Not provided"),
-                severity=patient_data.get("severity", "Not provided"),
-                character=patient_data.get("character", "Not provided"),
-                radiation=patient_data.get("radiation", "Not provided"),
-                associated_symptoms=patient_data.get(
-                    "associated_symptoms", "Not provided"
-                )
+                severity=str(patient_data.get("severity", "Not provided")),
+                character=str(patient_data.get("character", "Not provided")),
+                radiation=str(patient_data.get("radiation", "Not provided")),
+                associated_symptoms=str(patient_data.get("associated_symptoms", "Not provided"))
             )
             results["symptom_analysis"] = symptom_result["result"]
         except Exception as e:
@@ -395,6 +382,7 @@ def run_clinical_assessment(patient_data: dict) -> dict:
 
     step_times["step1"] = round(time.time() - step1_start, 2)
     logger.info(f"[STEP 1] Done in {step_times['step1']}s")
+    time.sleep(3)
 
     # ─────────────────────────────────────────
     # STEP 2 — RISK ASSESSMENT
@@ -424,7 +412,7 @@ def run_clinical_assessment(patient_data: dict) -> dict:
 
     step_times["step2"] = round(time.time() - step2_start, 2)
     logger.info(f"[STEP 2] Done in {step_times['step2']}s")
-
+    time.sleep(3)
     # ─────────────────────────────────────────
     # STEP 3 — DRUG INTERACTION CHECK
     # ─────────────────────────────────────────
@@ -450,6 +438,7 @@ def run_clinical_assessment(patient_data: dict) -> dict:
 
     step_times["step3"] = round(time.time() - step3_start, 2)
     logger.info(f"[STEP 3] Done in {step_times['step3']}s")
+    time.sleep(3)
 
     # ─────────────────────────────────────────
     # STEP 4 — PROTOCOL MATCHING
@@ -518,7 +507,7 @@ def run_clinical_assessment(patient_data: dict) -> dict:
 
     step_times["step4"] = round(time.time() - step4_start, 2)
     logger.info(f"[STEP 4] Done in {step_times['step4']}s")
-
+    time.sleep(3)
     # ─────────────────────────────────────────
     # SANITY CHECK
     # ─────────────────────────────────────────
@@ -595,7 +584,7 @@ def run_clinical_assessment(patient_data: dict) -> dict:
             patient_data.get("patient_code"),
             patient_data.get("doctor_code"),
             patient_data.get("chief_complaint"),
-            f"BP:{patient_data.get('bp')} HR:{patient_data.get('hr')} O2:{patient_data.get('o2')}",
+            f"BP:{patient_data.get('bp')} HR:{patient_data.get('hr')} O2:{patient_data.get('o2')} Age:{patient_data.get('age')} Gender:{patient_data.get('gender')}",
             patient_data.get("medications"),
             patient_data.get("history"),
             json.dumps(reasoning_chain),

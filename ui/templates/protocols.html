@@ -1,0 +1,286 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>CliniqReason — Protocols</title>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="/static/css/tabler-icons.min.css">
+<style>
+*{margin:0;padding:0;box-sizing:border-box}
+body{background:#020817;font-family:'Inter',sans-serif;min-height:100vh;display:flex;color:#CBD5E1;font-size:14px}
+.sidebar{width:210px;background:#071226;border-right:0.5px solid #1E293B;display:flex;flex-direction:column;flex-shrink:0;position:fixed;height:100vh;left:0;top:0;z-index:100}
+.logo{padding:20px 16px;border-bottom:0.5px solid #1E293B}
+.logo-n{font-size:19px;font-weight:700;color:#fff}.logo-n span{color:#00D4FF}
+.logo-s{font-size:12px;color:#94A3B8;margin-top:4px}
+.nav{padding:8px 0;flex:1}
+.ni{display:flex;align-items:center;gap:9px;padding:10px 16px;color:#94A3B8;font-size:13px;cursor:pointer;transition:all 0.15s;text-decoration:none;font-weight:400}
+.ni:hover{color:#fff;background:rgba(255,255,255,0.04)}
+.ni.on{color:#00D4FF;background:rgba(0,212,255,0.08);border-right:2.5px solid #00D4FF;font-weight:600}
+.ni i{font-size:16px;flex-shrink:0}
+.sys{padding:14px 16px;border-top:0.5px solid #1E293B}
+.dot{width:7px;height:7px;border-radius:50%;background:#34D399;display:inline-block;margin-right:6px;animation:pulse 2s infinite}
+@keyframes pulse{0%,100%{opacity:1}50%{opacity:0.4}}
+.main{flex:1;margin-left:210px;display:flex;flex-direction:column;min-height:100vh}
+.topbar{background:#071226;border-bottom:0.5px solid #1E293B;padding:10px 24px;display:flex;align-items:center;gap:12px;position:sticky;top:0;z-index:50}
+.search{flex:1;background:#0F172A;border:0.5px solid #1E293B;border-radius:8px;padding:9px 14px;display:flex;align-items:center;gap:8px}
+.search input{background:transparent;border:none;outline:none;color:#CBD5E1;font-size:13px;width:100%;font-family:'Inter',sans-serif}
+.search input::placeholder{color:#475569}
+.dr-info{display:flex;align-items:center;gap:10px;margin-left:auto;flex-shrink:0}
+.av{width:32px;height:32px;border-radius:50%;background:linear-gradient(135deg,#1E3A5F,#0F2944);border:1.5px solid rgba(0,212,255,0.3);display:flex;align-items:center;justify-content:center;font-size:12px;color:#00D4FF;font-weight:700}
+.dr-name{font-size:13px;color:#CBD5E1;font-weight:600}
+.dr-dept{font-size:11px;color:#64748B}
+.content{padding:24px;display:flex;flex-direction:column;gap:16px}
+.page-title{font-size:24px;font-weight:700;color:#fff}
+.page-sub{font-size:14px;color:#94A3B8;margin-top:5px}
+
+/* CURRENT MATCH BANNER */
+.match-banner{background:rgba(0,212,255,0.06);border:0.5px solid rgba(0,212,255,0.25);border-radius:12px;padding:16px 20px;display:flex;align-items:center;gap:14px}
+.match-icon{width:42px;height:42px;border-radius:50%;background:rgba(0,212,255,0.12);border:1px solid rgba(0,212,255,0.3);display:flex;align-items:center;justify-content:center;color:#00D4FF;font-size:18px;flex-shrink:0}
+.match-title{font-size:15px;font-weight:700;color:#fff}
+.match-sub{font-size:13px;color:#94A3B8;margin-top:3px}
+.match-badge{margin-left:auto;background:rgba(52,211,153,0.12);border:0.5px solid rgba(52,211,153,0.3);border-radius:20px;padding:5px 14px;font-size:12px;color:#34D399;font-weight:600;flex-shrink:0}
+
+/* FILTER TABS */
+.tabs{display:flex;gap:8px;flex-wrap:wrap}
+.tab{background:#071226;border:0.5px solid #1E293B;border-radius:8px;padding:7px 16px;font-size:13px;color:#94A3B8;cursor:pointer;font-family:'Inter',sans-serif;transition:all 0.15s;font-weight:500}
+.tab:hover{color:#CBD5E1;border-color:#334155}
+.tab.active{color:#00D4FF;border-color:rgba(0,212,255,0.4);background:rgba(0,212,255,0.06);font-weight:600}
+
+/* PROTOCOL CARDS */
+.protocols-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(340px,1fr));gap:14px}
+.protocol-card{background:#071226;border:0.5px solid #1E293B;border-radius:12px;padding:20px;transition:all 0.2s;cursor:pointer}
+.protocol-card:hover{border-color:rgba(0,212,255,0.3);transform:translateY(-2px)}
+.protocol-card.matched{border-color:rgba(52,211,153,0.4);background:rgba(52,211,153,0.03)}
+.protocol-card.matched:hover{border-color:rgba(52,211,153,0.7)}
+.pc-header{display:flex;align-items:flex-start;gap:12px;margin-bottom:14px}
+.pc-icon{width:40px;height:40px;border-radius:10px;display:flex;align-items:center;justify-content:center;font-size:18px;flex-shrink:0}
+.pc-icon.red{background:rgba(185,28,28,0.12);color:#FCA5A5}
+.pc-icon.blue{background:rgba(0,212,255,0.12);color:#00D4FF}
+.pc-icon.green{background:rgba(52,211,153,0.12);color:#34D399}
+.pc-icon.amber{background:rgba(245,158,11,0.12);color:#FCD34D}
+.pc-name{font-size:15px;font-weight:700;color:#fff;margin-bottom:4px}
+.pc-org{font-size:12px;color:#64748B;font-weight:500}
+.pc-match{margin-left:auto;font-size:11px;color:#34D399;background:rgba(52,211,153,0.1);border:0.5px solid rgba(52,211,153,0.3);border-radius:6px;padding:3px 10px;font-weight:700;white-space:nowrap}
+.pc-desc{font-size:13px;color:#94A3B8;line-height:1.6;margin-bottom:14px}
+.pc-steps{display:flex;flex-direction:column;gap:6px;margin-bottom:14px}
+.pc-step{display:flex;align-items:flex-start;gap:8px;font-size:13px;color:#CBD5E1;line-height:1.4}
+.pc-step-dot{width:6px;height:6px;border-radius:50%;background:#00D4FF;flex-shrink:0;margin-top:5px}
+.pc-footer{display:flex;align-items:center;justify-content:space-between;padding-top:12px;border-top:0.5px solid #1E293B}
+.pc-category{font-size:11px;color:#64748B;font-weight:500;text-transform:uppercase;letter-spacing:0.5px}
+.pc-link{font-size:12px;color:#00D4FF;font-weight:600;text-decoration:none;display:flex;align-items:center;gap:4px}
+.pc-link:hover{color:#38BDF8}
+.disc-bar{background:#071226;border:0.5px solid rgba(52,211,153,0.15);border-radius:10px;padding:12px 20px;font-size:13px;color:#94A3B8;text-align:center}
+.future-badge{font-size:11px;color:#F59E0B;background:rgba(245,158,11,0.1);border:0.5px solid rgba(245,158,11,0.3);border-radius:6px;padding:3px 10px;font-weight:700;margin-left:auto}
+</style>
+</head>
+<body>
+<div class="sidebar">
+  <div class="logo">
+    <div class="logo-n">Cliniq<span>Reason</span></div>
+    <div class="logo-s">Not a Medical Device</div>
+  </div>
+  <div class="nav">
+    <a class="ni" href="/output"><i class="ti ti-layout-dashboard"></i>Dashboard</a>
+    <a class="ni" href="/loading"><i class="ti ti-brain"></i>Analyze</a>
+    <a class="ni" href="/input"><i class="ti ti-plus"></i>New Case</a>
+    <a class="ni" href="/patients"><i class="ti ti-users"></i>Patients</a>
+    <a class="ni on" href="/protocols"><i class="ti ti-clipboard-list"></i>Protocols</a>
+    <a class="ni" href="/guidelines"><i class="ti ti-book"></i>Guidelines</a>
+    <a class="ni" href="/reports"><i class="ti ti-chart-bar"></i>Reports</a>
+    <a class="ni" href="/audit"><i class="ti ti-history"></i>Audit Trail</a>
+  </div>
+  <div class="sys">
+    <div style="font-size:11px;color:#64748B;margin-bottom:5px;text-transform:uppercase;letter-spacing:0.5px">System Status</div>
+    <div style="font-size:13px;color:#34D399;font-weight:600"><span class="dot"></span>All Operational</div>
+    <div style="font-size:11px;color:#475569;margin-top:5px">CliniqReason v1.0.0</div>
+  </div>
+</div>
+
+<div class="main">
+  <div class="topbar">
+    <div class="search">
+      <i class="ti ti-search" style="color:#475569;font-size:15px;flex-shrink:0"></i>
+      <input type="text" placeholder="Search protocols..." id="searchInput" oninput="filterProtocols()">
+    </div>
+    <div class="dr-info">
+      <div class="av" id="drAvatar">DR</div>
+      <div>
+        <div class="dr-name">{{ doctor_id }}</div>
+        <div class="dr-dept">Emergency Medicine</div>
+      </div>
+    </div>
+  </div>
+
+  <div class="content">
+    <div>
+      <div class="page-title">Clinical Protocols</div>
+      <div class="page-sub">Evidence-based protocols matched to current assessment and sample reference cards</div>
+    </div>
+
+    <!-- CURRENT MATCH -->
+    <div class="match-banner" id="matchBanner">
+      <div class="match-icon"><i class="ti ti-bolt"></i></div>
+      <div>
+        <div class="match-title" id="matchTitle">No active assessment</div>
+        <div class="match-sub" id="matchSub">Run an analysis to see matched protocols for your current patient</div>
+      </div>
+      <div class="match-badge" id="matchBadge">No Match</div>
+    </div>
+
+    <!-- FILTER TABS -->
+    <div class="tabs">
+      <button class="tab active" onclick="setTab('all',this)">All Protocols</button>
+      <button class="tab" onclick="setTab('cardiac',this)">Cardiac</button>
+      <button class="tab" onclick="setTab('sepsis',this)">Sepsis</button>
+      <button class="tab" onclick="setTab('stroke',this)">Stroke</button>
+      <button class="tab" onclick="setTab('trauma',this)">Trauma</button>
+    </div>
+
+    <!-- PROTOCOL CARDS -->
+    <div class="protocols-grid" id="protocolsGrid"></div>
+
+    <div class="disc-bar">
+      ⚠️ Protocols are for reference only — Not a Medical Device — Always verify with current institutional guidelines
+    </div>
+  </div>
+</div>
+
+<script>
+const PROTOCOLS=[
+  {id:1,name:'ACS / NSTEMI Protocol',org:'AHA/ACC 2022',icon:'ti-heart-rate-monitor',iconClass:'red',category:'cardiac',
+   desc:'Immediate management protocol for Acute Coronary Syndrome including NSTEMI and unstable angina. Covers triage, diagnostics, and specialist referral.',
+   steps:['Establish IV access and continuous cardiac monitoring','Obtain 12-lead ECG within 10 minutes of arrival','Draw cardiac biomarkers — Troponin, CK-MB, BNP','Cardiology consult — immediate for HIGH risk patients','Risk stratify using HEART or TIMI score'],
+   link:'https://www.ahajournals.org/doi/10.1161/CIR.0000000000001129',
+   keywords:['acs','coronary','nstemi','stemi','chest pain','cardiac','heart']},
+
+  {id:2,name:'Sepsis & Septic Shock Bundle',org:'Surviving Sepsis Campaign 2024',icon:'ti-virus',iconClass:'amber',category:'sepsis',
+   desc:'Hour-1 and 3-hour bundles for sepsis management including fluid resuscitation, blood cultures, and antibiotic administration.',
+   steps:['Measure lactate — if >2 mmol/L suspect sepsis','Obtain blood cultures before antibiotics','Administer broad-spectrum antibiotics within 1 hour','Begin IV fluid resuscitation — 30ml/kg crystalloid','Apply vasopressors if MAP <65 mmHg'],
+   link:'https://www.survivingsepsis.org/guidelines',
+   keywords:['sepsis','infection','fever','shock','bacteremia']},
+
+  {id:3,name:'Acute Stroke Protocol',org:'AHA/ASA 2023',icon:'ti-brain',iconClass:'blue',category:'stroke',
+   desc:'Time-critical stroke management protocol. Covers rapid assessment, CT imaging, tPA eligibility, and neurology activation.',
+   steps:['Activate stroke team immediately — Time is Brain','Non-contrast CT head within 25 minutes of arrival','NIHSS assessment by trained clinician','tPA eligibility assessment if within 4.5 hour window','Neurology/neurosurgery consult — immediate'],
+   link:'https://www.ahajournals.org/doi/10.1161/STR.0000000000000432',
+   keywords:['stroke','neuro','brain','tpa','thrombolysis','neurological']},
+
+  {id:4,name:'STEMI Reperfusion Protocol',org:'AHA/ACC 2022',icon:'ti-heartbeat',iconClass:'red',category:'cardiac',
+   desc:'Door-to-balloon time optimization protocol for STEMI. Target PCI within 90 minutes of first medical contact.',
+   steps:['12-lead ECG within 10 minutes — identify ST elevation','Cath lab activation — door-to-balloon <90 minutes','Dual antiplatelet therapy — per cardiology order','Anticoagulation per cardiologist direction','Transfer to cath lab immediately'],
+   link:'https://www.ahajournals.org/doi/10.1161/CIR.0000000000001124',
+   keywords:['stemi','pci','cath','balloon','myocardial infarction']},
+
+  {id:5,name:'Trauma Primary Survey (ATLS)',org:'American College of Surgeons 2023',icon:'ti-ambulance',iconClass:'amber',category:'trauma',
+   desc:'ATLS-based primary survey for trauma patients. Systematic ABCDE approach to identify and manage life-threatening injuries.',
+   steps:['Airway — assess and secure with cervical spine control','Breathing — assess ventilation and oxygenation','Circulation — control hemorrhage, establish IV access','Disability — GCS assessment, pupil response','Exposure — full body survey, prevent hypothermia'],
+   link:'https://www.facs.org/quality-programs/trauma/atls/',
+   keywords:['trauma','injury','atls','emergency','abc']},
+
+  {id:6,name:'Hypertensive Emergency Protocol',org:'ESC/ESH 2023',icon:'ti-activity',iconClass:'blue',category:'cardiac',
+   desc:'Management of hypertensive emergency with target organ damage. Controlled BP reduction to prevent end-organ injury.',
+   steps:['Confirm BP in both arms — identify hypertensive emergency','Assess for end-organ damage — heart, brain, kidneys','IV antihypertensive — reduce MAP by 25% in first hour','Continuous BP monitoring — arterial line if available','Nephrology/cardiology consult as indicated'],
+   link:'https://www.escardio.org/Guidelines/Clinical-Practice-Guidelines/Arterial-Hypertension',
+   keywords:['hypertension','blood pressure','bp','hypertensive crisis']},
+];
+
+let currentTab='all';
+let allProtocols=[...PROTOCOLS];
+
+window.onload=function(){
+  const did='{{ doctor_id }}';
+  const av=document.getElementById('drAvatar');
+  if(av)av.textContent=did.replace('DR-','').substring(0,2).toUpperCase();
+
+  // Check for current assessment match
+  const result=JSON.parse(sessionStorage.getItem('assessmentResult')||'{}');
+  const report=(result.final_report||'').toLowerCase();
+  const chain=result.reasoning_chain||{};
+  const symptom=(chain.step1_symptom_analysis||'').toLowerCase();
+
+  if(report||symptom){
+    const combined=report+' '+symptom;
+    let matched=null;
+    if(combined.includes('coronary')||combined.includes('nstemi')||combined.includes('acs')){
+      matched=PROTOCOLS[0];
+    }else if(combined.includes('sepsis')||combined.includes('infection')){
+      matched=PROTOCOLS[1];
+    }else if(combined.includes('stroke')||combined.includes('neuro')){
+      matched=PROTOCOLS[2];
+    }else if(combined.includes('stemi')){
+      matched=PROTOCOLS[3];
+    }else if(combined.includes('trauma')){
+      matched=PROTOCOLS[4];
+    }else if(combined.includes('hypertens')){
+      matched=PROTOCOLS[5];
+    }
+
+    if(matched){
+      document.getElementById('matchTitle').textContent='Matched: '+matched.name;
+      document.getElementById('matchSub').textContent='Protocol matched based on current patient assessment — '+matched.org;
+      document.getElementById('matchBadge').textContent='✓ Matched';
+      document.getElementById('matchBadge').style.color='#34D399';
+      document.getElementById('matchBanner').style.borderColor='rgba(52,211,153,0.4)';
+
+      // Mark matched protocol
+      allProtocols=PROTOCOLS.map(p=>({...p,matched:p.id===matched.id}));
+    }
+  }
+
+  renderProtocols(allProtocols);
+};
+
+function setTab(tab,btn){
+  currentTab=tab;
+  document.querySelectorAll('.tab').forEach(b=>b.classList.remove('active'));
+  btn.classList.add('active');
+  filterProtocols();
+}
+
+function filterProtocols(){
+  const q=document.getElementById('searchInput').value.toLowerCase();
+  let filtered=allProtocols;
+  if(currentTab!=='all'){
+    filtered=filtered.filter(p=>p.category===currentTab);
+  }
+  if(q){
+    filtered=filtered.filter(p=>
+      p.name.toLowerCase().includes(q)||
+      p.desc.toLowerCase().includes(q)||
+      p.keywords.some(k=>k.includes(q))
+    );
+  }
+  renderProtocols(filtered);
+}
+
+function renderProtocols(data){
+  const grid=document.getElementById('protocolsGrid');
+  if(!data.length){
+    grid.innerHTML='<div style="padding:40px;text-align:center;color:#64748B;font-size:13px">No protocols found matching your search</div>';
+    return;
+  }
+  grid.innerHTML=data.map(p=>`
+    <div class="protocol-card ${p.matched?'matched':''}">
+      <div class="pc-header">
+        <div class="pc-icon ${p.iconClass}"><i class="ti ${p.icon}"></i></div>
+        <div>
+          <div class="pc-name">${p.name}</div>
+          <div class="pc-org">${p.org}</div>
+        </div>
+        ${p.matched?'<div class="pc-match">✓ Matched</div>':'<div class="future-badge">Reference</div>'}
+      </div>
+      <div class="pc-desc">${p.desc}</div>
+      <div class="pc-steps">
+        ${p.steps.map(s=>`<div class="pc-step"><div class="pc-step-dot"></div>${s}</div>`).join('')}
+      </div>
+      <div class="pc-footer">
+        <div class="pc-category">${p.category}</div>
+        <a class="pc-link" href="${p.link}" target="_blank">View Full Protocol <i class="ti ti-external-link"></i></a>
+      </div>
+    </div>
+  `).join('');
+}
+</script>
+</body>
+</html>

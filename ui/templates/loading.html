@@ -1,0 +1,357 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>CliniqReason — Analyzing</title>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="/static/css/tabler-icons.min.css">
+<style>
+*{margin:0;padding:0;box-sizing:border-box}
+body{background:#020817;font-family:'Inter',sans-serif;min-height:100vh;display:flex;color:#CBD5E1;font-size:14px}
+.sidebar{width:210px;background:#071226;border-right:0.5px solid #1E293B;display:flex;flex-direction:column;flex-shrink:0;position:fixed;height:100vh;left:0;top:0;z-index:100}
+.logo{padding:20px 16px;border-bottom:0.5px solid #1E293B}
+.logo-n{font-size:19px;font-weight:700;color:#fff}.logo-n span{color:#00D4FF}
+.logo-s{font-size:12px;color:#94A3B8;margin-top:4px}
+.nav{padding:8px 0;flex:1}
+.ni{display:flex;align-items:center;gap:9px;padding:10px 16px;color:#94A3B8;font-size:13px;cursor:pointer;transition:all 0.15s;text-decoration:none;font-weight:400}
+.ni:hover{color:#fff;background:rgba(255,255,255,0.04)}
+.ni.on{color:#00D4FF;background:rgba(0,212,255,0.08);border-right:2.5px solid #00D4FF;font-weight:600}
+.ni i{font-size:16px;flex-shrink:0}
+.sys{padding:14px 16px;border-top:0.5px solid #1E293B}
+.dot{width:7px;height:7px;border-radius:50%;background:#34D399;display:inline-block;margin-right:6px;animation:pulse 2s infinite}
+@keyframes pulse{0%,100%{opacity:1;transform:scale(1)}50%{opacity:0.5;transform:scale(0.85)}}
+.main{flex:1;margin-left:210px;display:flex;flex-direction:column;min-height:100vh}
+.topbar{background:#071226;border-bottom:0.5px solid #1E293B;padding:12px 24px;display:flex;align-items:center;justify-content:space-between;position:sticky;top:0;z-index:50}
+.topbar-left{flex:1}
+.topbar-title{font-size:15px;font-weight:700;color:#fff}
+.topbar-meta{font-size:13px;color:#94A3B8;margin-top:3px}
+.dr-badge{background:rgba(0,212,255,0.08);border:0.5px solid rgba(0,212,255,0.25);border-radius:20px;padding:5px 14px;font-size:12px;color:#00D4FF;font-weight:600}
+.center{flex:1;display:flex;flex-direction:column;align-items:center;justify-content:center;padding:40px 24px;gap:24px}
+.title{font-size:24px;font-weight:700;color:#fff;text-align:center}
+.subtitle{font-size:14px;color:#94A3B8;text-align:center;margin-top:-16px}
+.pipeline{display:flex;flex-direction:column;gap:10px;width:100%;max-width:600px}
+.step{display:flex;align-items:center;gap:16px;background:#071226;border:0.5px solid #1E293B;border-radius:12px;padding:14px 18px;transition:all 0.3s;cursor:default}
+.step.done{border-color:rgba(52,211,153,0.4);background:rgba(52,211,153,0.03);cursor:pointer}
+.step.done:hover{border-color:rgba(52,211,153,0.7);background:rgba(52,211,153,0.08);transform:translateX(4px)}
+.step.running{border-color:rgba(0,212,255,0.4);background:rgba(0,212,255,0.03)}
+.step-icon{width:40px;height:40px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:16px;border:0.5px solid;flex-shrink:0}
+.step-icon.done{background:rgba(52,211,153,0.12);border-color:rgba(52,211,153,0.5);color:#34D399}
+.step-icon.running{background:rgba(0,212,255,0.12);border-color:#00D4FF;color:#00D4FF}
+.step-icon.waiting{background:rgba(30,41,59,0.4);border-color:#334155;color:#475569}
+.step-info{flex:1}
+.step-name{font-size:14px;font-weight:600;color:#fff}
+.step-desc{font-size:12px;color:#94A3B8;margin-top:3px}
+.step-hint{font-size:12px;color:#475569;margin-top:4px}
+.step-hint.active{color:#34D399;font-weight:600}
+.step-hint.running{color:#00D4FF}
+.step-time{font-size:12px;font-weight:600;min-width:110px;text-align:right}
+.step-time.done{color:#34D399}
+.step-time.running{color:#00D4FF}
+.step-time.waiting{color:#475569}
+.progress-wrap{width:100%;max-width:600px}
+.progress-label{display:flex;justify-content:space-between;font-size:13px;color:#94A3B8;margin-bottom:8px;font-weight:500}
+.progress-label span:last-child{color:#00D4FF;font-weight:700}
+.progress-bar{height:6px;background:#0F172A;border-radius:3px;overflow:hidden}
+.progress-fill{height:100%;background:linear-gradient(90deg,#00D4FF,#34D399);border-radius:3px;transition:width 1s ease}
+.foundry-badge{display:flex;align-items:center;gap:8px;background:rgba(0,212,255,0.06);border:0.5px solid rgba(0,212,255,0.2);border-radius:20px;padding:8px 20px;font-size:13px;color:#00D4FF;font-weight:600}
+.disclaimer{font-size:13px;color:#94A3B8;text-align:center}
+.modal-overlay{position:fixed;top:0;left:0;width:100%;height:100%;background:rgba(2,8,23,0.92);z-index:999;display:flex;align-items:center;justify-content:center;padding:20px;backdrop-filter:blur(4px)}
+.modal-box{background:#071226;border:0.5px solid #1E293B;border-radius:16px;padding:28px;max-width:700px;width:100%;max-height:85vh;overflow-y:auto}
+.modal-header{display:flex;align-items:center;justify-content:space-between;margin-bottom:20px;padding-bottom:14px;border-bottom:0.5px solid #1E293B}
+.modal-title{font-size:15px;font-weight:700;color:#00D4FF;display:flex;align-items:center;gap:8px}
+.modal-close{background:rgba(255,255,255,0.06);border:0.5px solid #1E293B;border-radius:8px;color:#94A3B8;font-size:13px;cursor:pointer;padding:6px 14px;transition:all 0.15s;font-family:'Inter',sans-serif;font-weight:500}
+.modal-close:hover{color:#fff;background:rgba(255,255,255,0.1)}
+.modal-content{font-size:13px;color:#CBD5E1;line-height:2;white-space:pre-wrap;font-family:'Courier New',monospace}
+.view-btn{background:linear-gradient(135deg,#DC2626,#991B1B);color:#fff;border:none;border-radius:10px;padding:14px 32px;font-size:14px;font-weight:700;cursor:pointer;font-family:'Inter',sans-serif;display:flex;align-items:center;gap:8px;transition:all 0.2s;margin-top:8px}
+.view-btn:hover{transform:translateY(-2px);box-shadow:0 8px 20px rgba(220,38,38,0.3)}
+.status-banner{background:rgba(52,211,153,0.06);border:0.5px solid rgba(52,211,153,0.3);border-radius:10px;padding:12px 20px;font-size:13px;color:#34D399;font-weight:600;text-align:center;width:100%;max-width:600px}
+@media(max-width:768px){.sidebar{display:none}.main{margin-left:0}}
+</style>
+</head>
+<body>
+
+<div class="sidebar">
+  <div class="logo">
+    <div class="logo-n">Cliniq<span>Reason</span></div>
+    <div class="logo-s">Not a Medical Device</div>
+  </div>
+  <div class="nav">
+    <a class="ni" href="/output"><i class="ti ti-layout-dashboard"></i>Dashboard</a>
+    <a class="ni on" href="/loading"><i class="ti ti-brain"></i>Analyze</a>
+    <a class="ni" href="/input"><i class="ti ti-plus"></i>New Case</a>
+    <a class="ni" href="/patients"><i class="ti ti-users"></i>Patients</a>
+    <a class="ni" href="/protocols"><i class="ti ti-clipboard-list"></i>Protocols</a>
+    <a class="ni" href="/guidelines"><i class="ti ti-book"></i>Guidelines</a>
+    <a class="ni" href="/reports"><i class="ti ti-chart-bar"></i>Reports</a>
+    <a class="ni" href="/audit"><i class="ti ti-history"></i>Audit Trail</a>
+  </div>
+  <div class="sys">
+    <div style="font-size:11px;color:#64748B;margin-bottom:5px;text-transform:uppercase;letter-spacing:0.5px">System Status</div>
+    <div style="font-size:13px;color:#34D399;font-weight:600"><span class="dot"></span>All Operational</div>
+    <div style="font-size:11px;color:#475569;margin-top:5px">CliniqReason v1.0.0</div>
+  </div>
+</div>
+
+<div class="main">
+  <div class="topbar">
+    <div class="topbar-left">
+      <div class="topbar-title" id="topbarTitle">Analyzing Patient Data</div>
+      <div class="topbar-meta" id="topbarMeta">Initializing Microsoft Foundry IQ agents...</div>
+    </div>
+    <div class="dr-badge" id="drBadge">DR-DEMO-001</div>
+  </div>
+
+  <div class="center">
+    <div class="title" id="mainTitle">Clinical Reasoning in Progress</div>
+    <div class="subtitle" id="mainSubtitle">Microsoft Foundry IQ is analyzing patient data through 5 specialized agents</div>
+
+    <div class="pipeline">
+      <div class="step waiting" id="step1" onclick="showResult(1)">
+        <div class="step-icon waiting" id="icon1"><i class="ti ti-stethoscope"></i></div>
+        <div class="step-info">
+          <div class="step-name">Symptom Analyzer</div>
+          <div class="step-desc">Ranking differential diagnoses by likelihood</div>
+          <div class="step-hint" id="hint1">Waiting to start...</div>
+        </div>
+        <div class="step-time waiting" id="time1">Waiting...</div>
+      </div>
+
+      <div class="step waiting" id="step2" onclick="showResult(2)">
+        <div class="step-icon waiting" id="icon2"><i class="ti ti-heart-rate-monitor"></i></div>
+        <div class="step-info">
+          <div class="step-name">Risk Assessor</div>
+          <div class="step-desc">Calculating HEART score and triage level</div>
+          <div class="step-hint" id="hint2">Waiting to start...</div>
+        </div>
+        <div class="step-time waiting" id="time2">Waiting...</div>
+      </div>
+
+      <div class="step waiting" id="step3" onclick="showResult(3)">
+        <div class="step-icon waiting" id="icon3"><i class="ti ti-pill"></i></div>
+        <div class="step-info">
+          <div class="step-name">Drug Interaction Checker</div>
+          <div class="step-desc">Checking medications for dangerous interactions</div>
+          <div class="step-hint" id="hint3">Waiting to start...</div>
+        </div>
+        <div class="step-time waiting" id="time3">Waiting...</div>
+      </div>
+
+      <div class="step waiting" id="step4" onclick="showResult(4)">
+        <div class="step-icon waiting" id="icon4"><i class="ti ti-clipboard-list"></i></div>
+        <div class="step-info">
+          <div class="step-name">Protocol Matcher</div>
+          <div class="step-desc">Matching to AHA/ACC clinical guidelines</div>
+          <div class="step-hint" id="hint4">Waiting to start...</div>
+        </div>
+        <div class="step-time waiting" id="time4">Waiting...</div>
+      </div>
+
+      <div class="step waiting" id="step5" onclick="showResult(5)">
+        <div class="step-icon waiting" id="icon5"><i class="ti ti-file-report"></i></div>
+        <div class="step-info">
+          <div class="step-name">Report Compiler</div>
+          <div class="step-desc">Compiling final structured clinical report</div>
+          <div class="step-hint" id="hint5">Waiting to start...</div>
+        </div>
+        <div class="step-time waiting" id="time5">Waiting...</div>
+      </div>
+    </div>
+
+    <div class="progress-wrap">
+      <div class="progress-label">
+        <span>Analysis Progress</span>
+        <span id="pct">0%</span>
+      </div>
+      <div class="progress-bar">
+        <div class="progress-fill" id="progressFill" style="width:0%"></div>
+      </div>
+    </div>
+
+    <div class="foundry-badge"><i class="ti ti-bolt"></i>Powered by Microsoft Foundry IQ</div>
+    <div class="disclaimer">⚠️ Clinical Decision Support Only — Not a Medical Device</div>
+  </div>
+</div>
+
+<script>
+let agentResults={1:null,2:null,3:null,4:null,5:null};
+const agentNames={1:'Symptom Analyzer',2:'Risk Assessor',3:'Drug Interaction Checker',4:'Protocol Matcher',5:'Report Compiler'};
+let analysisController=null;
+
+function setStep(id,status,timeText){
+  const step=document.getElementById('step'+id);
+  const icon=document.getElementById('icon'+id);
+  const time=document.getElementById('time'+id);
+  const hint=document.getElementById('hint'+id);
+  if(step)step.className='step '+status;
+  if(icon)icon.className='step-icon '+status;
+  if(time){time.className='step-time '+status;time.textContent=timeText;}
+  if(hint){
+    if(status==='done'){hint.textContent='👆 Click to view agent findings';hint.className='step-hint active';}
+    else if(status==='running'){hint.textContent='Running now...';hint.className='step-hint running';}
+    else{hint.textContent='Waiting to start...';hint.className='step-hint';}
+  }
+}
+
+function showResult(id){
+  const result=agentResults[id];
+  if(!result){
+    alert('No data for this agent yet. Please run an analysis first.');
+    return;
+  }
+  const overlay=document.createElement('div');
+  overlay.className='modal-overlay';
+  overlay.innerHTML=`<div class="modal-box">
+    <div class="modal-header">
+      <div class="modal-title">
+        <i class="ti ti-robot"></i>
+        Agent ${id}: ${agentNames[id]} — Findings
+      </div>
+      <button class="modal-close" onclick="document.querySelector('.modal-overlay').remove()">✕ Close</button>
+    </div>
+    <div class="modal-content">${result}</div>
+  </div>`;
+  overlay.onclick=function(e){if(e.target===overlay)overlay.remove();};
+  document.body.appendChild(overlay);
+}
+
+function setProgress(pct){
+  document.getElementById('progressFill').style.width=pct+'%';
+  document.getElementById('pct').textContent=pct+'%';
+}
+
+function updateMeta(text){
+  document.getElementById('topbarMeta').textContent=text;
+}
+
+function showCompletedState(r,fromPrevious){
+  const chain=r.reasoning_chain||{};
+  agentResults[1]=chain.step1_symptom_analysis||'No data from this agent';
+  agentResults[2]=chain.step2_risk_assessment||'No data from this agent';
+  agentResults[3]=chain.step3_drug_interactions||'No data from this agent';
+  agentResults[4]=chain.step4_protocol_match||'No data from this agent';
+  agentResults[5]=r.final_report||'No data from this agent';
+
+  setStep(1,'done','✓ Complete');
+  setStep(2,'done','✓ Complete');
+  setStep(3,'done','✓ Complete');
+  setStep(4,'done','✓ Complete');
+  setStep(5,'done','✓ Complete');
+  setProgress(100);
+
+  if(fromPrevious){
+    document.getElementById('topbarTitle').textContent='Previous Analysis Loaded';
+    updateMeta('Showing results from last analysis — click any agent to view findings');
+    document.getElementById('mainTitle').textContent='Analysis Complete';
+    document.getElementById('mainSubtitle').textContent='Previous patient analysis — click any agent below to view detailed findings';
+
+    // Show status banner
+    const banner=document.createElement('div');
+    banner.className='status-banner';
+    banner.innerHTML='✓ Previous analysis loaded — click any agent to view findings';
+    document.querySelector('.center').insertBefore(banner,document.querySelector('.pipeline'));
+  }else{
+    updateMeta('Analysis complete — click any agent to view findings');
+    document.getElementById('mainTitle').textContent='Analysis Complete!';
+    document.getElementById('mainSubtitle').textContent='All 5 agents completed — click any agent to view detailed findings';
+  }
+
+  // Add View Dashboard button
+  const btn=document.createElement('button');
+  btn.className='view-btn';
+  btn.innerHTML='<i class="ti ti-layout-dashboard"></i> View Full Dashboard &rarr;';
+  btn.onclick=function(){window.location.href='/output';};
+  document.querySelector('.center').appendChild(btn);
+
+  // Add New Analysis button
+  const btn2=document.createElement('button');
+  btn2.style.cssText='background:transparent;color:#64748B;border:0.5px solid #1E293B;border-radius:10px;padding:10px 24px;font-size:13px;font-weight:500;cursor:pointer;font-family:Inter,sans-serif;transition:all 0.2s';
+  btn2.innerHTML='↺ Run New Analysis';
+  btn2.onmouseover=function(){this.style.color='#CBD5E1';this.style.borderColor='#334155';};
+  btn2.onmouseout=function(){this.style.color='#64748B';this.style.borderColor='#1E293B';};
+  btn2.onclick=function(){
+    sessionStorage.removeItem('assessmentResult');
+    sessionStorage.removeItem('patientData');
+    window.location.href='/input';
+  };
+  document.querySelector('.center').appendChild(btn2);
+}
+
+async function runAnalysis(){
+  const data=JSON.parse(sessionStorage.getItem('patientData')||'{}');
+  if(!data.patient_code){window.location.href='/input';return;}
+
+  // Create abort controller
+  analysisController=new AbortController();
+  window.addEventListener('beforeunload',function(){
+    if(analysisController)analysisController.abort();
+  });
+
+  setStep(1,'running','Running...');
+  updateMeta('Step 1 of 5: Analyzing symptoms...');
+  setProgress(5);
+
+  let elapsed=0;
+  const timer=setInterval(function(){
+    elapsed+=1;
+    setProgress(Math.min(88,5+elapsed*2));
+    if(elapsed===5){setStep(1,'done','✓ Done');setStep(2,'running','Running...');updateMeta('Step 2 of 5: Calculating HEART score...');}
+    if(elapsed===10){setStep(2,'done','✓ Done');setStep(3,'running','Running...');updateMeta('Step 3 of 5: Checking drug interactions...');}
+    if(elapsed===16){setStep(3,'done','✓ Done');setStep(4,'running','Running...');updateMeta('Step 4 of 5: Matching clinical protocols...');}
+    if(elapsed===22){setStep(4,'done','✓ Done');setStep(5,'running','Running...');updateMeta('Step 5 of 5: Compiling final report...');}
+  },1000);
+
+  try{
+    const response=await fetch('/analyze',{
+      method:'POST',
+      headers:{'Content-Type':'application/json'},
+      body:JSON.stringify(data),
+      signal:analysisController.signal
+    });
+    const result=await response.json();
+    clearInterval(timer);
+
+    if(result.success){
+      const r=result.result;
+      // Save result to sessionStorage
+      sessionStorage.setItem('assessmentResult',JSON.stringify(r));
+      showCompletedState(r,false);
+    }else{
+      updateMeta('Error: '+(result.error||'Unknown error occurred'));
+    }
+  }catch(err){
+    clearInterval(timer);
+    if(err.name==='AbortError'){
+      console.log('Analysis aborted - user navigated away');
+    }else{
+      updateMeta('Connection error — please try again');
+      console.error(err);
+    }
+  }
+}
+
+window.onload=function(){
+  // Set doctor badge
+  const data=JSON.parse(sessionStorage.getItem('patientData')||'{}');
+
+  // Check if previous result exists
+  const existingResult=sessionStorage.getItem('assessmentResult');
+  if(existingResult){
+    // Show completed state with previous results
+    const r=JSON.parse(existingResult);
+    showCompletedState(r,true);
+    return;
+  }
+
+  // No patient data → go to input
+  if(!data.patient_code){
+    window.location.href='/input';
+    return;
+  }
+
+  // Run fresh analysis
+  runAnalysis();
+};
+</script>
+</body>
+</html>

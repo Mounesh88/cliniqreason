@@ -1,0 +1,414 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>CliniqReason — New Case</title>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="/static/css/tabler-icons.min.css">
+<style>
+*{margin:0;padding:0;box-sizing:border-box}
+body{background:#020817;font-family:'Inter',sans-serif;min-height:100vh;display:flex;color:#CBD5E1;font-size:14px}
+.sidebar{width:210px;background:#071226;border-right:0.5px solid #1E293B;display:flex;flex-direction:column;flex-shrink:0;position:fixed;height:100vh;left:0;top:0;z-index:100}
+.logo{padding:20px 16px;border-bottom:0.5px solid #1E293B}
+.logo-n{font-size:19px;font-weight:700;color:#fff}.logo-n span{color:#00D4FF}
+.logo-s{font-size:12px;color:#94A3B8;margin-top:4px}
+.nav{padding:8px 0;flex:1}
+.ni{display:flex;align-items:center;gap:9px;padding:10px 16px;color:#94A3B8;font-size:13px;cursor:pointer;transition:all 0.15s;text-decoration:none;font-weight:400}
+.ni:hover{color:#fff;background:rgba(255,255,255,0.04)}
+.ni.on{color:#00D4FF;background:rgba(0,212,255,0.08);border-right:2.5px solid #00D4FF;font-weight:600}
+.ni i{font-size:16px;flex-shrink:0}
+.sys{padding:14px 16px;border-top:0.5px solid #1E293B}
+.dot{width:7px;height:7px;border-radius:50%;background:#34D399;display:inline-block;margin-right:6px;animation:pulse 2s infinite}
+@keyframes pulse{0%,100%{opacity:1}50%{opacity:0.4}}
+.main{flex:1;margin-left:210px;display:flex;flex-direction:column;min-height:100vh}
+.topbar{background:#071226;border-bottom:0.5px solid #1E293B;padding:12px 24px;display:flex;align-items:center;justify-content:space-between;position:sticky;top:0;z-index:50}
+.topbar-title{font-size:16px;font-weight:700;color:#fff}
+.topbar-right{display:flex;align-items:center;gap:14px}
+.dr-badge{background:rgba(0,212,255,0.08);border:0.5px solid rgba(0,212,255,0.25);border-radius:20px;padding:5px 14px;font-size:13px;color:#00D4FF;font-weight:600}
+.logout{font-size:13px;color:#64748B;cursor:pointer;text-decoration:none;transition:color 0.15s;font-weight:500}
+.logout:hover{color:#FCA5A5}
+.content{padding:24px;display:flex;flex-direction:column;gap:16px;max-width:960px;margin:0 auto;width:100%}
+.page-title{font-size:24px;font-weight:700;color:#fff}
+.page-sub{font-size:14px;color:#94A3B8;margin-top:5px}
+
+/* UPLOAD SECTION */
+.upload-card{background:#071226;border:1px dashed rgba(0,212,255,0.3);border-radius:14px;padding:24px;text-align:center;transition:all 0.2s;cursor:pointer;position:relative}
+.upload-card:hover{border-color:rgba(0,212,255,0.6);background:rgba(0,212,255,0.03)}
+.upload-card.dragover{border-color:#00D4FF;background:rgba(0,212,255,0.06)}
+.upload-icon{font-size:36px;color:#00D4FF;margin-bottom:10px}
+.upload-title{font-size:15px;font-weight:700;color:#fff;margin-bottom:6px}
+.upload-sub{font-size:13px;color:#94A3B8;margin-bottom:14px}
+.upload-types{display:flex;gap:8px;justify-content:center;flex-wrap:wrap;margin-bottom:14px}
+.upload-type{font-size:11px;color:#64748B;background:#0F172A;border:0.5px solid #1E293B;border-radius:6px;padding:4px 10px;font-weight:500}
+.upload-btn{background:rgba(0,212,255,0.1);border:0.5px solid rgba(0,212,255,0.3);border-radius:8px;padding:9px 20px;font-size:13px;color:#00D4FF;font-weight:600;cursor:pointer;font-family:'Inter',sans-serif;transition:all 0.2s}
+.upload-btn:hover{background:rgba(0,212,255,0.2)}
+.upload-input{position:absolute;top:0;left:0;width:100%;height:100%;opacity:0;cursor:pointer}
+.upload-progress{display:none;margin-top:14px}
+.upload-status{font-size:13px;color:#34D399;font-weight:600;margin-top:10px;display:none}
+.upload-error{font-size:13px;color:#FCA5A5;font-weight:600;margin-top:10px;display:none}
+
+/* DIVIDER */
+.divider{display:flex;align-items:center;gap:12px;color:#334155;font-size:12px;font-weight:500}
+.divider::before,.divider::after{content:'';flex:1;height:0.5px;background:#1E293B}
+
+.err{background:rgba(185,28,28,0.08);border:0.5px solid rgba(185,28,28,0.3);border-radius:10px;padding:14px 18px;font-size:13px;color:#FCA5A5;display:none}
+.card{background:#071226;border:0.5px solid #1E293B;border-radius:14px;padding:22px 26px}
+.sec-head{display:flex;align-items:center;gap:10px;margin-bottom:18px}
+.sec-dot{width:8px;height:8px;border-radius:50%;background:#00D4FF;flex-shrink:0}
+.sec-dot.opt{background:#F59E0B}
+.sec-title{font-size:12px;font-weight:700;color:#00D4FF;letter-spacing:1.5px;text-transform:uppercase}
+.opt-badge{font-size:10px;color:#F59E0B;background:rgba(245,158,11,0.1);border:0.5px solid rgba(245,158,11,0.3);border-radius:10px;padding:3px 10px;margin-left:auto;font-weight:700}
+.grid3{display:grid;grid-template-columns:1fr 1fr 1fr;gap:14px}
+.grid2{display:grid;grid-template-columns:1fr 1fr;gap:14px}
+.full{grid-column:1/-1}
+.fg{display:flex;flex-direction:column;gap:6px}
+.lbl{font-size:12px;color:#94A3B8;letter-spacing:0.5px;text-transform:uppercase;font-weight:600}
+.req{color:#FCA5A5}
+.inp,.sel,.ta{background:#0F172A;border:0.5px solid #1E293B;border-radius:10px;padding:10px 14px;font-size:13px;color:#fff;font-family:'Inter',sans-serif;outline:none;transition:all 0.2s;width:100%}
+.inp:focus,.sel:focus,.ta:focus{border-color:#00D4FF;box-shadow:0 0 0 3px rgba(0,212,255,0.06)}
+.inp::placeholder,.ta::placeholder{color:#334155}
+.sel{color:#94A3B8}
+.sel option{background:#0F172A;color:#fff}
+.ta{resize:vertical;min-height:80px;line-height:1.6}
+.sev-row{display:flex;align-items:center;gap:12px;padding:4px 0}
+.sev-slider{flex:1;accent-color:#DC2626;cursor:pointer;height:5px}
+.sev-val{font-size:24px;font-weight:700;color:#DC2626;min-width:32px;text-align:center}
+.sev-lbl{font-size:13px;color:#64748B;font-weight:500}
+.submit-row{display:flex;gap:12px}
+.btn-analyze{flex:1;background:linear-gradient(135deg,#DC2626,#991B1B);color:#fff;border:none;border-radius:12px;padding:15px;font-size:14px;font-weight:700;font-family:'Inter',sans-serif;cursor:pointer;transition:all 0.2s;letter-spacing:0.5px;display:flex;align-items:center;justify-content:center;gap:8px}
+.btn-analyze:hover{transform:translateY(-2px);box-shadow:0 8px 24px rgba(220,38,38,0.35)}
+.btn-analyze:disabled{opacity:0.6;cursor:not-allowed;transform:none;box-shadow:none}
+.btn-clear{background:transparent;color:#94A3B8;border:0.5px solid #1E293B;border-radius:12px;padding:15px 22px;font-size:13px;font-family:'Inter',sans-serif;cursor:pointer;transition:all 0.2s;font-weight:500}
+.btn-clear:hover{color:#CBD5E1;border-color:#334155;background:rgba(255,255,255,0.03)}
+.submit-note{text-align:center;font-size:13px;color:#64748B;margin-top:4px}
+@media(max-width:768px){.sidebar{display:none}.main{margin-left:0}.grid3{grid-template-columns:1fr}.grid2{grid-template-columns:1fr}}
+</style>
+</head>
+<body>
+<div class="sidebar">
+  <div class="logo">
+    <div class="logo-n">Cliniq<span>Reason</span></div>
+    <div class="logo-s">Not a Medical Device</div>
+  </div>
+  <div class="nav">
+    <a class="ni" href="/output"><i class="ti ti-layout-dashboard"></i>Dashboard</a>
+    <a class="ni" href="/loading"><i class="ti ti-brain"></i>Analyze</a>
+    <a class="ni on" href="/input"><i class="ti ti-plus"></i>New Case</a>
+    <a class="ni" href="/patients"><i class="ti ti-users"></i>Patients</a>
+    <a class="ni" href="/protocols"><i class="ti ti-clipboard-list"></i>Protocols</a>
+    <a class="ni" href="/guidelines"><i class="ti ti-book"></i>Guidelines</a>
+    <a class="ni" href="/reports"><i class="ti ti-chart-bar"></i>Reports</a>
+    <a class="ni" href="/audit"><i class="ti ti-history"></i>Audit Trail</a>
+  </div>
+  <div class="sys">
+    <div style="font-size:11px;color:#64748B;margin-bottom:5px;text-transform:uppercase;letter-spacing:0.5px">System Status</div>
+    <div style="font-size:13px;color:#34D399;font-weight:600"><span class="dot"></span>All Operational</div>
+    <div style="font-size:11px;color:#475569;margin-top:5px">CliniqReason v1.0.0</div>
+  </div>
+</div>
+
+<div class="main">
+  <div class="topbar">
+    <div class="topbar-title">New Patient Assessment</div>
+    <div class="topbar-right">
+      <div class="dr-badge">{{ doctor_id }}</div>
+      <a class="logout" href="/logout">Logout</a>
+    </div>
+  </div>
+
+  <div class="content">
+    <div>
+      <div class="page-title">New Case</div>
+      <div class="page-sub">Upload a patient file to auto-fill, or enter information manually below</div>
+    </div>
+
+    <!-- PDF/WORD UPLOAD -->
+    <div class="upload-card" id="uploadCard" ondragover="handleDragOver(event)" ondragleave="handleDragLeave(event)" ondrop="handleDrop(event)">
+      <input type="file" class="upload-input" id="fileInput" accept=".pdf,.doc,.docx,.txt" onchange="handleFileUpload(event)">
+      <div class="upload-icon"><i class="ti ti-file-upload"></i></div>
+      <div class="upload-title">Upload Patient File</div>
+      <div class="upload-sub">Drag and drop or click to upload — fields will be auto-filled from the document</div>
+      <div class="upload-types">
+        <span class="upload-type">📄 PDF</span>
+        <span class="upload-type">📝 Word (.docx)</span>
+        <span class="upload-type">📋 Text (.txt)</span>
+      </div>
+      <button class="upload-btn" onclick="document.getElementById('fileInput').click();event.stopPropagation()">
+        <i class="ti ti-upload"></i> Choose File
+      </button>
+      <div class="upload-status" id="uploadStatus"></div>
+      <div class="upload-error" id="uploadError"></div>
+    </div>
+
+    <div class="divider">OR FILL MANUALLY</div>
+
+    <div class="err" id="err"></div>
+
+    <!-- PATIENT INFO -->
+    <div class="card">
+      <div class="sec-head"><div class="sec-dot"></div><div class="sec-title">Patient Information</div></div>
+      <div class="grid3">
+        <div class="fg"><div class="lbl">Patient Code<span class="req">*</span></div><input class="inp" id="patient_code" placeholder="PT-XXXX-XXX"></div>
+        <div class="fg"><div class="lbl">Age<span class="req">*</span></div><input class="inp" id="age" type="number" placeholder="e.g. 65" min="1" max="120"></div>
+        <div class="fg"><div class="lbl">Gender<span class="req">*</span></div><select class="sel" id="gender"><option value="">Select...</option><option>Male</option><option>Female</option><option>Other</option></select></div>
+      </div>
+    </div>
+
+    <!-- CHIEF COMPLAINT -->
+    <div class="card">
+      <div class="sec-head"><div class="sec-dot"></div><div class="sec-title">Chief Complaint</div></div>
+      <div class="grid3">
+        <div class="fg full"><div class="lbl">Main Symptom<span class="req">*</span></div><input class="inp" id="chief_complaint" placeholder="e.g. Chest pain"></div>
+        <div class="fg"><div class="lbl">Onset<span class="req">*</span></div><input class="inp" id="onset" placeholder="e.g. 2 hours ago"></div>
+        <div class="fg"><div class="lbl">Duration<span class="req">*</span></div><input class="inp" id="duration" placeholder="e.g. Continuous"></div>
+        <div class="fg"><div class="lbl">Character</div><input class="inp" id="character" placeholder="e.g. Crushing, pressure-like"></div>
+        <div class="fg full">
+          <div class="lbl">Severity (1-10)<span class="req">*</span></div>
+          <div class="sev-row">
+            <span class="sev-lbl">1</span>
+            <input type="range" class="sev-slider" id="severity" min="1" max="10" value="5" oninput="document.getElementById('sevVal').textContent=this.value">
+            <span class="sev-lbl">10</span>
+            <span class="sev-val" id="sevVal">5</span>
+          </div>
+        </div>
+        <div class="fg"><div class="lbl">Radiation</div><input class="inp" id="radiation" placeholder="e.g. Left arm, jaw"></div>
+        <div class="fg full"><div class="lbl">Associated Symptoms</div><textarea class="ta" id="associated_symptoms" placeholder="e.g. Shortness of breath, sweating, nausea, dizziness"></textarea></div>
+      </div>
+    </div>
+
+    <!-- VITALS -->
+    <div class="card">
+      <div class="sec-head"><div class="sec-dot"></div><div class="sec-title">Vital Signs</div></div>
+      <div class="grid3">
+        <div class="fg"><div class="lbl">Blood Pressure<span class="req">*</span></div><input class="inp" id="bp" placeholder="e.g. 90/60 mmHg"></div>
+        <div class="fg"><div class="lbl">Heart Rate<span class="req">*</span></div><input class="inp" id="hr" placeholder="e.g. 110 bpm"></div>
+        <div class="fg"><div class="lbl">O2 Saturation<span class="req">*</span></div><input class="inp" id="o2" placeholder="e.g. 94%"></div>
+        <div class="fg"><div class="lbl">Temperature</div><input class="inp" id="temp" placeholder="e.g. 37.2°C"></div>
+        <div class="fg"><div class="lbl">Respiratory Rate<span class="req">*</span></div><input class="inp" id="rr" placeholder="e.g. 22 breaths/min"></div>
+      </div>
+    </div>
+
+    <!-- MEDICAL HISTORY -->
+    <div class="card">
+      <div class="sec-head"><div class="sec-dot"></div><div class="sec-title">Medical History</div></div>
+      <div class="grid2">
+        <div class="fg"><div class="lbl">Past Conditions<span class="req">*</span></div><textarea class="ta" id="history" placeholder="e.g. Hypertension, Diabetes Type 2, Previous MI 2020"></textarea></div>
+        <div class="fg"><div class="lbl">Previous Surgeries</div><textarea class="ta" id="surgeries" placeholder="e.g. CABG 2020"></textarea></div>
+        <div class="fg"><div class="lbl">Family History</div><input class="inp" id="family_history" placeholder="e.g. Father MI at 60"></div>
+        <div class="fg"><div class="lbl">Smoking Status</div><select class="sel" id="smoking"><option value="">Select...</option><option>Never</option><option>Ex-smoker</option><option>Current smoker</option></select></div>
+      </div>
+    </div>
+
+    <!-- MEDICATIONS -->
+    <div class="card">
+      <div class="sec-head"><div class="sec-dot"></div><div class="sec-title">Medications & Allergies</div></div>
+      <div class="grid2">
+        <div class="fg"><div class="lbl">Current Medications<span class="req">*</span></div><textarea class="ta" id="medications" placeholder="e.g. Warfarin 5mg, Metformin 500mg, Lisinopril 10mg, Aspirin 81mg"></textarea></div>
+        <div class="fg"><div class="lbl">Known Allergies</div><textarea class="ta" id="allergies" placeholder="e.g. Penicillin, Sulfa drugs"></textarea></div>
+      </div>
+    </div>
+
+    <!-- ADVANCED -->
+    <div class="card">
+      <div class="sec-head"><div class="sec-dot opt"></div><div class="sec-title">Advanced Clinical Data</div><div class="opt-badge">OPTIONAL</div></div>
+      <div class="grid3">
+        <div class="fg"><div class="lbl">ECG Findings</div><input class="inp" id="ecg" placeholder="e.g. ST depression V4-V6"></div>
+        <div class="fg"><div class="lbl">Troponin Level</div><input class="inp" id="troponin" placeholder="e.g. Elevated 2.3 ng/mL"></div>
+        <div class="fg"><div class="lbl">Risk Factors</div><input class="inp" id="risk_factors" placeholder="e.g. Hypertension, Diabetes, Ex-smoker"></div>
+      </div>
+    </div>
+
+    <div class="submit-row">
+      <button class="btn-analyze" id="analyzeBtn" onclick="submitForm()">
+        <i class="ti ti-brain"></i> ANALYZE PATIENT
+      </button>
+      <button class="btn-clear" onclick="clearForm()">✕ CLEAR ALL</button>
+    </div>
+    <div class="submit-note">Analysis takes approximately 1-2 minutes via Microsoft Foundry IQ — 5 specialized agents</div>
+  </div>
+</div>
+
+<script>
+const REQUIRED=['patient_code','age','gender','chief_complaint','onset','duration','bp','hr','o2','rr','history','medications'];
+
+// ── FILE UPLOAD ──
+function handleDragOver(e){
+  e.preventDefault();
+  document.getElementById('uploadCard').classList.add('dragover');
+}
+function handleDragLeave(e){
+  document.getElementById('uploadCard').classList.remove('dragover');
+}
+function handleDrop(e){
+  e.preventDefault();
+  document.getElementById('uploadCard').classList.remove('dragover');
+  const file=e.dataTransfer.files[0];
+  if(file)processFile(file);
+}
+function handleFileUpload(e){
+  const file=e.target.files[0];
+  if(file)processFile(file);
+}
+
+function processFile(file){
+  const status=document.getElementById('uploadStatus');
+  const error=document.getElementById('uploadError');
+  status.style.display='none';
+  error.style.display='none';
+
+  const allowed=['application/pdf','application/vnd.openxmlformats-officedocument.wordprocessingml.document','application/msword','text/plain'];
+  const ext=file.name.split('.').pop().toLowerCase();
+
+  if(!allowed.includes(file.type)&&!['pdf','docx','doc','txt'].includes(ext)){
+    error.textContent='❌ Unsupported file type. Please upload PDF, Word, or Text file.';
+    error.style.display='block';
+    return;
+  }
+
+  status.textContent='⏳ Processing file — extracting patient data...';
+  status.style.display='block';
+  status.style.color='#00D4FF';
+
+  const formData=new FormData();
+  formData.append('file',file);
+
+  fetch('/upload_patient_file',{method:'POST',body:formData})
+  .then(r=>r.json())
+  .then(data=>{
+    if(data.success&&data.extracted){
+      fillFormFromExtracted(data.extracted);
+      status.textContent='✓ File processed — fields auto-filled! Review and click Analyze.';
+      status.style.color='#34D399';
+    }else{
+      error.textContent='⚠️ Could not extract data. Please fill form manually.';
+      error.style.display='block';
+      status.style.display='none';
+    }
+  })
+  .catch(()=>{
+    error.textContent='⚠️ Upload failed. Please fill form manually.';
+    error.style.display='block';
+    status.style.display='none';
+  });
+}
+
+function fillFormFromExtracted(data){
+  const fields=['patient_code','age','chief_complaint','onset','duration','character',
+    'radiation','associated_symptoms','bp','hr','o2','temp','rr',
+    'history','surgeries','family_history','medications','allergies',
+    'ecg','troponin','risk_factors'];
+
+  fields.forEach(f=>{
+    const el=document.getElementById(f);
+    if(el&&data[f]){
+      el.value=data[f];
+      el.style.borderColor='rgba(0,212,255,0.5)';
+    }
+  });
+
+  // Gender
+  if(data.gender){
+    const sel=document.getElementById('gender');
+    for(let o of sel.options){
+      if(o.text.toLowerCase()===data.gender.toLowerCase()){sel.value=o.value;break;}
+    }
+  }
+
+  // Smoking
+  if(data.smoking){
+    const sel=document.getElementById('smoking');
+    for(let o of sel.options){
+      if(o.text.toLowerCase().includes(data.smoking.toLowerCase())){sel.value=o.value;break;}
+    }
+  }
+
+  // Severity
+  if(data.severity){
+    document.getElementById('severity').value=data.severity;
+    document.getElementById('sevVal').textContent=data.severity;
+  }
+}
+
+// ── FORM SUBMIT ──
+function submitForm(){
+  const err=document.getElementById('err');
+  const btn=document.getElementById('analyzeBtn');
+  err.style.display='none';
+
+  const missing=[];
+  REQUIRED.forEach(f=>{
+    const el=document.getElementById(f);
+    if(!el||!el.value.trim()){
+      missing.push(f.replace(/_/g,' '));
+      if(el)el.style.borderColor='rgba(185,28,28,0.6)';
+    }else{
+      if(el)el.style.borderColor='rgba(4,120,87,0.5)';
+    }
+  });
+
+  if(missing.length>0){
+    err.textContent='Please fill required fields: '+missing.join(', ');
+    err.style.display='block';
+    window.scrollTo({top:0,behavior:'smooth'});
+    return;
+  }
+
+  const data={
+    patient_code:document.getElementById('patient_code').value.trim(),
+    age:parseInt(document.getElementById('age').value),
+    gender:document.getElementById('gender').value,
+    chief_complaint:document.getElementById('chief_complaint').value.trim(),
+    onset:document.getElementById('onset').value.trim(),
+    duration:document.getElementById('duration').value.trim(),
+    severity:document.getElementById('severity').value,
+    character:document.getElementById('character').value.trim(),
+    radiation:document.getElementById('radiation').value.trim(),
+    associated_symptoms:document.getElementById('associated_symptoms').value.trim(),
+    bp:document.getElementById('bp').value.trim(),
+    hr:document.getElementById('hr').value.trim(),
+    o2:document.getElementById('o2').value.trim(),
+    temp:document.getElementById('temp').value.trim(),
+    rr:document.getElementById('rr').value.trim(),
+    history:document.getElementById('history').value.trim(),
+    surgeries:document.getElementById('surgeries').value.trim(),
+    family_history:document.getElementById('family_history').value.trim(),
+    smoking:document.getElementById('smoking').value,
+    medications:document.getElementById('medications').value.trim(),
+    allergies:document.getElementById('allergies').value.trim(),
+    ecg:document.getElementById('ecg').value.trim(),
+    troponin:document.getElementById('troponin').value.trim(),
+    risk_factors:document.getElementById('risk_factors').value.trim()
+  };
+
+  sessionStorage.setItem('patientData',JSON.stringify(data));
+  sessionStorage.removeItem('assessmentResult');
+  sessionStorage.removeItem('analysisRunning');
+
+  btn.innerHTML='<i class="ti ti-loader"></i> STARTING ANALYSIS...';
+  btn.disabled=true;
+  window.location.href='/loading';
+}
+
+function clearForm(){
+  if(!confirm('Clear all fields? This cannot be undone.'))return;
+  document.querySelectorAll('.inp,.ta,.sel').forEach(el=>{
+    if(el.tagName==='SELECT')el.selectedIndex=0;
+    else el.value='';
+    el.style.borderColor='';
+  });
+  document.getElementById('severity').value=5;
+  document.getElementById('sevVal').textContent='5';
+  document.getElementById('err').style.display='none';
+  document.getElementById('uploadStatus').style.display='none';
+  document.getElementById('uploadError').style.display='none';
+  window.scrollTo({top:0,behavior:'smooth'});
+}
+
+REQUIRED.forEach(f=>{
+  const el=document.getElementById(f);
+  if(el){el.addEventListener('input',function(){this.style.borderColor=this.value.trim()?'rgba(4,120,87,0.5)':'';});}
+});
+</script>
+</body>
+</html>

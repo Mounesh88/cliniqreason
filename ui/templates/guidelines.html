@@ -1,0 +1,361 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>CliniqReason — Guidelines</title>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="/static/css/tabler-icons.min.css">
+<style>
+*{margin:0;padding:0;box-sizing:border-box}
+body{background:#020817;font-family:'Inter',sans-serif;min-height:100vh;display:flex;color:#CBD5E1;font-size:14px}
+.sidebar{width:210px;background:#071226;border-right:0.5px solid #1E293B;display:flex;flex-direction:column;flex-shrink:0;position:fixed;height:100vh;left:0;top:0;z-index:100}
+.logo{padding:20px 16px;border-bottom:0.5px solid #1E293B}
+.logo-n{font-size:19px;font-weight:700;color:#fff}.logo-n span{color:#00D4FF}
+.logo-s{font-size:12px;color:#94A3B8;margin-top:4px}
+.nav{padding:8px 0;flex:1}
+.ni{display:flex;align-items:center;gap:9px;padding:10px 16px;color:#94A3B8;font-size:13px;cursor:pointer;transition:all 0.15s;text-decoration:none;font-weight:400}
+.ni:hover{color:#fff;background:rgba(255,255,255,0.04)}
+.ni.on{color:#00D4FF;background:rgba(0,212,255,0.08);border-right:2.5px solid #00D4FF;font-weight:600}
+.ni i{font-size:16px;flex-shrink:0}
+.sys{padding:14px 16px;border-top:0.5px solid #1E293B}
+.dot{width:7px;height:7px;border-radius:50%;background:#34D399;display:inline-block;margin-right:6px;animation:pulse 2s infinite}
+@keyframes pulse{0%,100%{opacity:1}50%{opacity:0.4}}
+.main{flex:1;margin-left:210px;display:flex;flex-direction:column;min-height:100vh}
+.topbar{background:#071226;border-bottom:0.5px solid #1E293B;padding:10px 24px;display:flex;align-items:center;gap:12px;position:sticky;top:0;z-index:50}
+.search{flex:1;background:#0F172A;border:0.5px solid #1E293B;border-radius:8px;padding:9px 14px;display:flex;align-items:center;gap:8px}
+.search:focus-within{border-color:rgba(0,212,255,0.4)}
+.search input{background:transparent;border:none;outline:none;color:#CBD5E1;font-size:13px;width:100%;font-family:'Inter',sans-serif}
+.search input::placeholder{color:#475569}
+.dr-info{display:flex;align-items:center;gap:10px;margin-left:auto;flex-shrink:0}
+.av{width:32px;height:32px;border-radius:50%;background:linear-gradient(135deg,#1E3A5F,#0F2944);border:1.5px solid rgba(0,212,255,0.3);display:flex;align-items:center;justify-content:center;font-size:12px;color:#00D4FF;font-weight:700}
+.dr-name{font-size:13px;color:#CBD5E1;font-weight:600}
+.dr-dept{font-size:11px;color:#64748B}
+.content{padding:24px;display:flex;flex-direction:column;gap:16px}
+.page-title{font-size:24px;font-weight:700;color:#fff}
+.page-sub{font-size:14px;color:#94A3B8;margin-top:5px}
+
+/* CURRENT MATCH */
+.match-banner{background:rgba(0,212,255,0.06);border:0.5px solid rgba(0,212,255,0.25);border-radius:12px;padding:16px 20px;display:flex;align-items:center;gap:14px}
+.match-icon{width:42px;height:42px;border-radius:50%;background:rgba(0,212,255,0.12);border:1px solid rgba(0,212,255,0.3);display:flex;align-items:center;justify-content:center;color:#00D4FF;font-size:18px;flex-shrink:0}
+.match-title{font-size:15px;font-weight:700;color:#fff}
+.match-sub{font-size:13px;color:#94A3B8;margin-top:3px}
+.match-badge{margin-left:auto;background:rgba(52,211,153,0.12);border:0.5px solid rgba(52,211,153,0.3);border-radius:20px;padding:5px 14px;font-size:12px;color:#34D399;font-weight:600;flex-shrink:0}
+
+/* TABS */
+.tabs{display:flex;gap:8px;flex-wrap:wrap}
+.tab{background:#071226;border:0.5px solid #1E293B;border-radius:8px;padding:7px 16px;font-size:13px;color:#94A3B8;cursor:pointer;font-family:'Inter',sans-serif;transition:all 0.15s;font-weight:500}
+.tab:hover{color:#CBD5E1;border-color:#334155}
+.tab.active{color:#00D4FF;border-color:rgba(0,212,255,0.4);background:rgba(0,212,255,0.06);font-weight:600}
+
+/* GUIDELINE CARDS */
+.guidelines-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(340px,1fr));gap:14px}
+.guideline-card{background:#071226;border:0.5px solid #1E293B;border-radius:12px;padding:20px;transition:all 0.2s}
+.guideline-card:hover{border-color:rgba(0,212,255,0.3);transform:translateY(-2px)}
+.guideline-card.matched{border-color:rgba(52,211,153,0.4);background:rgba(52,211,153,0.03)}
+.gc-header{display:flex;align-items:flex-start;gap:12px;margin-bottom:14px}
+.gc-icon{width:40px;height:40px;border-radius:10px;display:flex;align-items:center;justify-content:center;font-size:18px;flex-shrink:0}
+.gc-icon.red{background:rgba(185,28,28,0.12);color:#FCA5A5}
+.gc-icon.blue{background:rgba(0,212,255,0.12);color:#00D4FF}
+.gc-icon.green{background:rgba(52,211,153,0.12);color:#34D399}
+.gc-icon.amber{background:rgba(245,158,11,0.12);color:#FCD34D}
+.gc-icon.purple{background:rgba(139,92,246,0.12);color:#A78BFA}
+.gc-name{font-size:15px;font-weight:700;color:#fff;margin-bottom:4px}
+.gc-org{font-size:12px;color:#64748B;font-weight:500}
+.gc-year{font-size:11px;color:#475569;margin-top:2px}
+.gc-match{margin-left:auto;font-size:11px;color:#34D399;background:rgba(52,211,153,0.1);border:0.5px solid rgba(52,211,153,0.3);border-radius:6px;padding:3px 10px;font-weight:700;white-space:nowrap}
+.gc-ref{font-size:11px;color:#64748B;background:#0F172A;border:0.5px solid #1E293B;border-radius:6px;padding:3px 10px;font-weight:500;white-space:nowrap;margin-left:auto}
+.gc-desc{font-size:13px;color:#94A3B8;line-height:1.6;margin-bottom:14px}
+.gc-points{display:flex;flex-direction:column;gap:6px;margin-bottom:14px}
+.gc-point{display:flex;align-items:flex-start;gap:8px;font-size:13px;color:#CBD5E1;line-height:1.4}
+.gc-dot{width:6px;height:6px;border-radius:50%;flex-shrink:0;margin-top:5px}
+.gc-tags{display:flex;gap:6px;flex-wrap:wrap;margin-bottom:14px}
+.gc-tag{font-size:11px;color:#64748B;background:#0F172A;border:0.5px solid #1E293B;border-radius:6px;padding:3px 10px;font-weight:500}
+.gc-footer{display:flex;align-items:center;justify-content:space-between;padding-top:12px;border-top:0.5px solid #1E293B}
+.gc-level{display:flex;align-items:center;gap:6px;font-size:12px;color:#64748B}
+.gc-level-badge{font-size:10px;font-weight:700;padding:2px 8px;border-radius:4px}
+.level-a{background:rgba(52,211,153,0.15);color:#34D399}
+.level-b{background:rgba(0,212,255,0.15);color:#00D4FF}
+.level-c{background:rgba(245,158,11,0.15);color:#FCD34D}
+.gc-link{font-size:12px;color:#00D4FF;font-weight:600;text-decoration:none;display:flex;align-items:center;gap:4px}
+.gc-link:hover{color:#38BDF8}
+.disc-bar{background:#071226;border:0.5px solid rgba(52,211,153,0.15);border-radius:10px;padding:12px 20px;font-size:13px;color:#94A3B8;text-align:center}
+</style>
+</head>
+<body>
+<div class="sidebar">
+  <div class="logo">
+    <div class="logo-n">Cliniq<span>Reason</span></div>
+    <div class="logo-s">Not a Medical Device</div>
+  </div>
+  <div class="nav">
+    <a class="ni" href="/output"><i class="ti ti-layout-dashboard"></i>Dashboard</a>
+    <a class="ni" href="/loading"><i class="ti ti-brain"></i>Analyze</a>
+    <a class="ni" href="/input"><i class="ti ti-plus"></i>New Case</a>
+    <a class="ni" href="/patients"><i class="ti ti-users"></i>Patients</a>
+    <a class="ni" href="/protocols"><i class="ti ti-clipboard-list"></i>Protocols</a>
+    <a class="ni on" href="/guidelines"><i class="ti ti-book"></i>Guidelines</a>
+    <a class="ni" href="/reports"><i class="ti ti-chart-bar"></i>Reports</a>
+    <a class="ni" href="/audit"><i class="ti ti-history"></i>Audit Trail</a>
+  </div>
+  <div class="sys">
+    <div style="font-size:11px;color:#64748B;margin-bottom:5px;text-transform:uppercase;letter-spacing:0.5px">System Status</div>
+    <div style="font-size:13px;color:#34D399;font-weight:600"><span class="dot"></span>All Operational</div>
+    <div style="font-size:11px;color:#475569;margin-top:5px">CliniqReason v1.0.0</div>
+  </div>
+</div>
+
+<div class="main">
+  <div class="topbar">
+    <div class="search">
+      <i class="ti ti-search" style="color:#475569;font-size:15px;flex-shrink:0"></i>
+      <input type="text" placeholder="Search guidelines..." id="searchInput" oninput="filterGuidelines()">
+    </div>
+    <div class="dr-info">
+      <div class="av" id="drAvatar">DR</div>
+      <div>
+        <div class="dr-name">{{ doctor_id }}</div>
+        <div class="dr-dept">Emergency Medicine</div>
+      </div>
+    </div>
+  </div>
+
+  <div class="content">
+    <div>
+      <div class="page-title">Clinical Guidelines</div>
+      <div class="page-sub">Evidence-based guidelines matched to current assessment — sample reference cards for future integration</div>
+    </div>
+
+    <!-- CURRENT MATCH BANNER -->
+    <div class="match-banner" id="matchBanner">
+      <div class="match-icon"><i class="ti ti-book"></i></div>
+      <div>
+        <div class="match-title" id="matchTitle">No active assessment</div>
+        <div class="match-sub" id="matchSub">Run an analysis to see matched guidelines for your current patient</div>
+      </div>
+      <div class="match-badge" id="matchBadge">No Match</div>
+    </div>
+
+    <!-- TABS -->
+    <div class="tabs">
+      <button class="tab active" onclick="setTab('all',this)">All Guidelines</button>
+      <button class="tab" onclick="setTab('cardiac',this)">Cardiac</button>
+      <button class="tab" onclick="setTab('emergency',this)">Emergency</button>
+      <button class="tab" onclick="setTab('pharmacology',this)">Pharmacology</button>
+      <button class="tab" onclick="setTab('critical',this)">Critical Care</button>
+    </div>
+
+    <!-- GUIDELINES GRID -->
+    <div class="guidelines-grid" id="guidelinesGrid"></div>
+
+    <div class="disc-bar">
+      ⚠️ Guidelines are for reference only — Not a Medical Device — Always verify with current institutional and regional guidelines
+    </div>
+  </div>
+</div>
+
+<script>
+const GUIDELINES=[
+  {id:1,name:'ACS / Chest Pain Guidelines',org:'AHA/ACC',year:'2022',icon:'ti-heart-rate-monitor',iconClass:'red',category:'cardiac',
+   level:'A',
+   desc:'Comprehensive guidelines for evaluation and management of chest pain and acute coronary syndromes in emergency and inpatient settings.',
+   points:[
+     'HEART score ≥7 — high risk, immediate cardiology referral required',
+     'Serial troponins at 0, 3 and 6 hours — rule-in/rule-out ACS',
+     'Dual antiplatelet therapy — per cardiologist discretion only',
+     'Early invasive strategy within 24h for high-risk NSTEMI patients'
+   ],
+   tags:['ACS','NSTEMI','STEMI','Chest Pain','Troponin','HEART Score'],
+   link:'https://www.ahajournals.org/doi/10.1161/CIR.0000000000001129',
+   keywords:['acs','coronary','chest pain','nstemi','stemi','heart','cardiac','troponin']},
+
+  {id:2,name:'Anticoagulation Safety Guidelines',org:'ASH / ISTH',year:'2023',icon:'ti-droplet',iconClass:'red',category:'pharmacology',
+   level:'A',
+   desc:'Evidence-based guidelines for safe anticoagulation management including warfarin, DOACs, and reversal agents in high-risk patients.',
+   points:[
+     'Warfarin + NSAIDs (including aspirin) — major bleeding risk, avoid combination',
+     'INR monitoring — weekly initially, monthly when stable',
+     'Reversal agents — Vitamin K, FFP, PCC for urgent reversal',
+     'Bridging therapy — per haematologist recommendation only'
+   ],
+   tags:['Warfarin','Anticoagulation','INR','Bleeding Risk','DOACs'],
+   link:'https://www.hematology.org/education/clinicians/guidelines-and-quality-care/clinical-practice-guidelines',
+   keywords:['warfarin','anticoagulation','bleeding','inr','heparin','coagulation']},
+
+  {id:3,name:'Sepsis Management Guidelines',org:'Surviving Sepsis Campaign',year:'2024',icon:'ti-virus',iconClass:'amber',category:'critical',
+   level:'A',
+   desc:'International guidelines for recognition and management of sepsis and septic shock. Hour-1 bundle and ongoing management recommendations.',
+   points:[
+     'Sepsis-3 definition — life-threatening organ dysfunction from infection',
+     'Hour-1 bundle — blood cultures, lactate, antibiotics, fluids',
+     'qSOFA screening — ≥2 points triggers sepsis workup',
+     'Vasopressors — norepinephrine first-line for septic shock'
+   ],
+   tags:['Sepsis','Septic Shock','qSOFA','SOFA','Lactate','Antibiotics'],
+   link:'https://www.survivingsepsis.org/guidelines',
+   keywords:['sepsis','infection','shock','bacteremia','antibiotic','fever']},
+
+  {id:4,name:'Hypertension Management Guidelines',org:'ESC/ESH',year:'2023',icon:'ti-activity',iconClass:'blue',category:'cardiac',
+   level:'A',
+   desc:'European guidelines for diagnosis and management of arterial hypertension including hypertensive emergencies and target organ damage.',
+   points:[
+     'BP target <130/80 mmHg for most patients with cardiovascular risk',
+     'ACE inhibitors first-line in diabetics with proteinuria',
+     'Hypertensive emergency — reduce MAP by 25% within first hour',
+     'Home BP monitoring recommended for diagnosis confirmation'
+   ],
+   tags:['Hypertension','Blood Pressure','ACE Inhibitors','Cardiovascular Risk'],
+   link:'https://www.escardio.org/Guidelines/Clinical-Practice-Guidelines/Arterial-Hypertension',
+   keywords:['hypertension','blood pressure','bp','antihypertensive','lisinopril']},
+
+  {id:5,name:'Diabetes & Cardiovascular Risk',org:'ADA / ESC',year:'2023',icon:'ti-test-pipe',iconClass:'green',category:'pharmacology',
+   level:'B',
+   desc:'Joint guidelines on diabetes management in patients with cardiovascular disease. Covers metformin safety, glycaemic targets, and cardioprotective therapy.',
+   points:[
+     'Metformin — contraindicated in eGFR <30, caution <60 mL/min/1.73m²',
+     'SGLT2 inhibitors — preferred in T2DM with established cardiovascular disease',
+     'HbA1c target <7% for most — individualise based on comorbidities',
+     'Statin therapy — recommended for all T2DM patients >40 years'
+   ],
+   tags:['Diabetes','Metformin','Cardiovascular','HbA1c','SGLT2'],
+   link:'https://diabetesjournals.org/care/issue/46/Supplement_1',
+   keywords:['diabetes','metformin','glucose','insulin','hba1c','glycaemic']},
+
+  {id:6,name:'Emergency Triage & Prioritization',org:'ACEP / ENA',year:'2023',icon:'ti-ambulance',iconClass:'amber',category:'emergency',
+   level:'B',
+   desc:'Evidence-based guidelines for emergency department triage using validated scoring systems including ESI, Manchester, and HEART score.',
+   points:[
+     'ESI Level 1 — immediate life threat, resuscitation required',
+     'ESI Level 2 — high risk situation, should not wait',
+     'HEART score 7-10 — high risk ACS, immediate cardiology',
+     'TIMI score ≥3 — consider early invasive strategy'
+   ],
+   tags:['Triage','ESI','Manchester','HEART Score','Emergency'],
+   link:'https://www.acep.org/clinical---practice-management/clinical-policies/',
+   keywords:['triage','emergency','esi','priority','urgency','acuity']},
+
+  {id:7,name:'Drug Interaction Management',org:'FDA / ISMP',year:'2024',icon:'ti-pill',iconClass:'purple',category:'pharmacology',
+   level:'A',
+   desc:'National guidelines for identifying and managing clinically significant drug interactions in acute and chronic care settings.',
+   points:[
+     'Warfarin + Aspirin — MAJOR: life-threatening hemorrhage risk',
+     'Metformin + ACE inhibitors — MODERATE: monitor renal function',
+     'Reconciliation at every care transition — medication review mandatory',
+     'High-alert medications require double-check before administration'
+   ],
+   tags:['Drug Interactions','Polypharmacy','Warfarin','Safety','Medication'],
+   link:'https://www.ismp.org/resources/ismp-list-high-alert-medications-community-ambulatory-care',
+   keywords:['drug interaction','medication','warfarin','aspirin','pharmacology','polypharmacy']},
+
+  {id:8,name:'Critical Care Monitoring Standards',org:'SCCM / ESICM',year:'2023',icon:'ti-heart-rate-monitor',iconClass:'blue',category:'critical',
+   level:'B',
+   desc:'International standards for monitoring critically ill patients in ICU and high-dependency settings. Covers haemodynamic, respiratory, and neurological monitoring.',
+   points:[
+     'Continuous cardiac monitoring for all haemodynamically unstable patients',
+     'Arterial line for patients requiring vasopressors or frequent ABG',
+     'Hourly urine output monitoring in patients with haemodynamic compromise',
+     'Daily sedation interruption and spontaneous breathing trials in ventilated patients'
+   ],
+   tags:['Critical Care','ICU','Monitoring','Haemodynamics','Ventilation'],
+   link:'https://www.sccm.org/Clinical-Resources/Guidelines/Guidelines',
+   keywords:['critical','icu','monitoring','ventilation','haemodynamic','intensive care']},
+];
+
+let currentTab='all';
+let allGuidelines=[...GUIDELINES];
+
+window.onload=function(){
+  const did='{{ doctor_id }}';
+  const av=document.getElementById('drAvatar');
+  if(av)av.textContent=did.replace('DR-','').substring(0,2).toUpperCase();
+
+  // Match to current assessment
+  const result=JSON.parse(sessionStorage.getItem('assessmentResult')||'{}');
+  const report=(result.final_report||'').toLowerCase();
+  const chain=result.reasoning_chain||{};
+  const symptom=(chain.step1_symptom_analysis||'').toLowerCase();
+  const drug=(chain.step3_drug_interactions||'').toLowerCase();
+  const combined=report+' '+symptom+' '+drug;
+
+  if(combined.trim()){
+    const matchedIds=new Set();
+    GUIDELINES.forEach(g=>{
+      if(g.keywords.some(k=>combined.includes(k))){
+        matchedIds.add(g.id);
+      }
+    });
+
+    if(matchedIds.size>0){
+      allGuidelines=GUIDELINES.map(g=>({...g,matched:matchedIds.has(g.id)}));
+      const matchedNames=GUIDELINES.filter(g=>matchedIds.has(g.id)).map(g=>g.name).slice(0,2).join(', ');
+      document.getElementById('matchTitle').textContent=matchedIds.size+' guideline'+(matchedIds.size>1?'s':'')+' matched';
+      document.getElementById('matchSub').textContent='Based on current assessment: '+matchedNames+(matchedIds.size>2?' and more':'');
+      document.getElementById('matchBadge').textContent='✓ '+matchedIds.size+' Matched';
+      document.getElementById('matchBadge').style.color='#34D399';
+      document.getElementById('matchBanner').style.borderColor='rgba(52,211,153,0.4)';
+    }
+  }
+
+  renderGuidelines(allGuidelines);
+};
+
+function setTab(tab,btn){
+  currentTab=tab;
+  document.querySelectorAll('.tab').forEach(b=>b.classList.remove('active'));
+  btn.classList.add('active');
+  filterGuidelines();
+}
+
+function filterGuidelines(){
+  const q=document.getElementById('searchInput').value.toLowerCase();
+  let filtered=allGuidelines;
+  if(currentTab!=='all'){
+    filtered=filtered.filter(g=>g.category===currentTab);
+  }
+  if(q){
+    filtered=filtered.filter(g=>
+      g.name.toLowerCase().includes(q)||
+      g.desc.toLowerCase().includes(q)||
+      g.tags.some(t=>t.toLowerCase().includes(q))||
+      g.keywords.some(k=>k.includes(q))
+    );
+  }
+  renderGuidelines(filtered);
+}
+
+function renderGuidelines(data){
+  const grid=document.getElementById('guidelinesGrid');
+  if(!data.length){
+    grid.innerHTML='<div style="padding:40px;text-align:center;color:#64748B;font-size:13px">No guidelines found matching your search</div>';
+    return;
+  }
+  grid.innerHTML=data.map(g=>`
+    <div class="guideline-card ${g.matched?'matched':''}">
+      <div class="gc-header">
+        <div class="gc-icon ${g.iconClass}"><i class="ti ${g.icon}"></i></div>
+        <div style="flex:1">
+          <div class="gc-name">${g.name}</div>
+          <div class="gc-org">${g.org}</div>
+          <div class="gc-year">Updated ${g.year}</div>
+        </div>
+        ${g.matched?'<div class="gc-match">✓ Matched</div>':'<div class="gc-ref">Reference</div>'}
+      </div>
+      <div class="gc-desc">${g.desc}</div>
+      <div class="gc-points">
+        ${g.points.map(p=>`<div class="gc-point"><div class="gc-dot" style="background:${g.matched?'#34D399':'#00D4FF'}"></div>${p}</div>`).join('')}
+      </div>
+      <div class="gc-tags">
+        ${g.tags.map(t=>`<span class="gc-tag">${t}</span>`).join('')}
+      </div>
+      <div class="gc-footer">
+        <div class="gc-level">
+          Evidence: <span class="gc-level-badge level-${g.level.toLowerCase()}">Level ${g.level}</span>
+        </div>
+        <a class="gc-link" href="${g.link}" target="_blank">Full Guideline <i class="ti ti-external-link"></i></a>
+      </div>
+    </div>
+  `).join('');
+}
+</script>
+</body>
+</html>

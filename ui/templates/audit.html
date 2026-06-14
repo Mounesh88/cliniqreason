@@ -1,0 +1,256 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>CliniqReason — Audit Trail</title>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="/static/css/tabler-icons.min.css">
+<style>
+*{margin:0;padding:0;box-sizing:border-box}
+body{background:#020817;font-family:'Inter',sans-serif;min-height:100vh;display:flex;color:#CBD5E1}
+.sidebar{width:200px;background:#071226;border-right:0.5px solid #1E293B;display:flex;flex-direction:column;flex-shrink:0;position:fixed;height:100vh;left:0;top:0;z-index:100}
+.logo{padding:20px 16px;border-bottom:0.5px solid #1E293B}
+.logo-n{font-size:18px;font-weight:700;color:#fff}.logo-n span{color:#00D4FF}
+.logo-s{font-size:11px;color:#94A3B8;margin-top:3px}
+.nav{padding:8px 0;flex:1}
+.ni{display:flex;align-items:center;gap:8px;padding:9px 16px;color:#94A3B8;font-size:13px;cursor:pointer;transition:all 0.15s;text-decoration:none}
+.ni:hover{color:#fff;background:rgba(255,255,255,0.04)}
+.ni.on{color:#00D4FF;background:rgba(0,212,255,0.08);border-right:2px solid #00D4FF;font-weight:500}
+.ni i{font-size:15px}
+.sys{padding:12px 16px;border-top:0.5px solid #1E293B}
+.dot{width:6px;height:6px;border-radius:50%;background:#34D399;display:inline-block;margin-right:5px;animation:pulse 2s infinite}
+@keyframes pulse{0%,100%{opacity:1}50%{opacity:0.4}}
+.main{flex:1;margin-left:200px;display:flex;flex-direction:column;min-height:100vh}
+.topbar{background:#071226;border-bottom:0.5px solid #1E293B;padding:10px 24px;display:flex;align-items:center;gap:12px;position:sticky;top:0;z-index:50}
+.search{flex:1;background:#0F172A;border:0.5px solid #1E293B;border-radius:8px;padding:8px 14px;display:flex;align-items:center;gap:8px}
+.search input{background:transparent;border:none;outline:none;color:#CBD5E1;font-size:12px;width:100%;font-family:'Inter',sans-serif}
+.search input::placeholder{color:#475569}
+.dr-info{display:flex;align-items:center;gap:10px;margin-left:auto}
+.av{width:30px;height:30px;border-radius:50%;background:#1E3A5F;display:flex;align-items:center;justify-content:center;font-size:11px;color:#00D4FF;font-weight:700}
+.dr-name{font-size:12px;color:#CBD5E1;font-weight:500}
+.dr-dept{font-size:10px;color:#64748B}
+.content{padding:24px;display:flex;flex-direction:column;gap:16px}
+.page-title{font-size:22px;font-weight:700;color:#fff}
+.page-sub{font-size:13px;color:#94A3B8;margin-top:5px}
+.stats{display:grid;grid-template-columns:repeat(4,1fr);gap:12px}
+.stat{background:#071226;border:0.5px solid #1E293B;border-radius:12px;padding:16px 20px;text-align:center}
+.stat-n{font-size:28px;font-weight:700;color:#fff;margin-bottom:4px}
+.stat-l{font-size:12px;color:#94A3B8;font-weight:500}
+.filters{display:flex;gap:10px;align-items:center}
+.filter-btn{background:#071226;border:0.5px solid #1E293B;border-radius:8px;padding:7px 14px;font-size:12px;color:#94A3B8;cursor:pointer;font-family:'Inter',sans-serif;transition:all 0.15s;font-weight:500}
+.filter-btn:hover{color:#CBD5E1;border-color:#334155}
+.filter-btn.active{color:#00D4FF;border-color:rgba(0,212,255,0.4);background:rgba(0,212,255,0.06)}
+.table-wrap{background:#071226;border:0.5px solid #1E293B;border-radius:12px;overflow:hidden}
+.table-head{display:grid;grid-template-columns:2fr 0.7fr 1fr 1fr 1.2fr 0.5fr;gap:12px;padding:12px 18px;border-bottom:0.5px solid #1E293B;font-size:10px;color:#64748B;letter-spacing:1px;text-transform:uppercase;font-weight:600}
+.table-row{display:grid;grid-template-columns:2fr 0.7fr 1fr 1fr 1.2fr 0.5fr;gap:12px;padding:13px 18px;border-bottom:0.5px solid rgba(30,41,59,0.5);font-size:12px;color:#94A3B8;cursor:pointer;transition:background 0.15s;align-items:center}
+.table-row:hover{background:rgba(255,255,255,0.02)}
+.table-row:last-child{border-bottom:none}
+.session-id{color:#38BDF8;font-family:'Courier New',monospace;font-size:11px;font-weight:500}
+.risk-pill{border-radius:8px;padding:3px 10px;font-size:10px;font-weight:700;display:inline-block;letter-spacing:0.5px}
+.rhi{background:rgba(185,28,28,0.15);color:#FCA5A5;border:0.5px solid rgba(185,28,28,0.3)}
+.rmo{background:rgba(180,83,9,0.15);color:#FCD34D;border:0.5px solid rgba(180,83,9,0.3)}
+.rlo{background:rgba(4,120,87,0.15);color:#6EE7B7;border:0.5px solid rgba(4,120,87,0.3)}
+.view-btn{color:#00D4FF;font-size:12px;cursor:pointer;font-weight:600;transition:color 0.15s}
+.view-btn:hover{color:#38BDF8}
+.empty{text-align:center;padding:48px;font-size:13px;color:#64748B}
+.disc-bar{background:#071226;border:0.5px solid rgba(52,211,153,0.15);border-radius:10px;padding:12px 18px;font-size:11px;color:#94A3B8;text-align:center}
+</style>
+</head>
+<body>
+<div class="sidebar">
+  <div class="logo">
+    <div class="logo-n">Cliniq<span>Reason</span></div>
+    <div class="logo-s">Not a Medical Device</div>
+  </div>
+  <div class="nav">
+    <a class="ni" href="/output"><i class="ti ti-layout-dashboard"></i>Dashboard</a>
+    <a class="ni" href="/loading"><i class="ti ti-brain"></i>Analyze</a>
+    <a class="ni" href="/input"><i class="ti ti-plus"></i>New Case</a>
+    <a class="ni" href="/patients"><i class="ti ti-users"></i>Patients</a>
+    <a class="ni" href="/protocols"><i class="ti ti-clipboard-list"></i>Protocols</a>
+    <a class="ni" href="/guidelines"><i class="ti ti-book"></i>Guidelines</a>
+    <a class="ni" href="/reports"><i class="ti ti-chart-bar"></i>Reports</a>
+    <a class="ni on" href="/audit"><i class="ti ti-history"></i>Audit Trail</a>
+  </div>
+  <div class="sys">
+    <div style="font-size:11px;color:#94A3B8;margin-bottom:5px">System Status</div>
+    <div style="font-size:12px;color:#34D399;font-weight:500"><span class="dot"></span>All Operational</div>
+    <div style="font-size:10px;color:#64748B;margin-top:5px">CliniqReason v1.0.0</div>
+  </div>
+</div>
+
+<div class="main">
+  <div class="topbar">
+    <div class="search">
+      <i class="ti ti-search" style="color:#475569;font-size:14px;flex-shrink:0"></i>
+      <input type="text" placeholder="Search by session ID, patient code..." id="searchInput" oninput="filterTable()">
+    </div>
+    <div class="dr-info">
+      <i class="ti ti-bell" style="color:#64748B;font-size:16px"></i>
+      <div class="av" id="drAvatar">DR</div>
+      <div>
+        <div class="dr-name">{{ doctor_id }}</div>
+        <div class="dr-dept">Emergency Medicine</div>
+      </div>
+    </div>
+  </div>
+
+  <div class="content">
+    <div>
+      <div class="page-title">Audit Trail</div>
+      <div class="page-sub">Complete record of all clinical reasoning sessions</div>
+    </div>
+
+    <div class="stats">
+      <div class="stat">
+        <div class="stat-n" id="totalCount">—</div>
+        <div class="stat-l">Total Sessions</div>
+      </div>
+      <div class="stat">
+        <div class="stat-n" style="color:#FCA5A5" id="highCount">—</div>
+        <div class="stat-l">High Risk</div>
+      </div>
+      <div class="stat">
+        <div class="stat-n" style="color:#FCD34D" id="modCount">—</div>
+        <div class="stat-l">Moderate Risk</div>
+      </div>
+      <div class="stat">
+        <div class="stat-n" style="color:#6EE7B7" id="lowCount">—</div>
+        <div class="stat-l">Low Risk</div>
+      </div>
+    </div>
+
+    <div class="filters">
+      <span style="font-size:12px;color:#64748B;font-weight:500">Filter:</span>
+      <button class="filter-btn active" onclick="setFilter('all',this)">All</button>
+      <button class="filter-btn" onclick="setFilter('HIGH',this)">High Risk</button>
+      <button class="filter-btn" onclick="setFilter('MODERATE',this)">Moderate</button>
+      <button class="filter-btn" onclick="setFilter('LOW',this)">Low Risk</button>
+    </div>
+
+    <div class="table-wrap">
+      <div class="table-head">
+        <span>Session ID</span>
+        <span>Risk</span>
+        <span>Patient</span>
+        <span>Doctor</span>
+        <span>Date & Time</span>
+        <span>View</span>
+      </div>
+      <div id="tableBody">
+        <div class="empty">Loading sessions...</div>
+      </div>
+    </div>
+
+    <div class="disc-bar">
+      ⚠️ All sessions stored securely — HIPAA aligned — No real patient data in demo mode
+    </div>
+  </div>
+</div>
+
+<script>
+let allSessions = [];
+let currentFilter = 'all';
+
+// Load sessions from server
+const sessions = {{ sessions | default([]) | tojson | safe }};
+
+window.onload = function(){
+  // Doctor avatar
+  const did = {{ doctor_id | tojson | safe }};
+  const av = document.getElementById('drAvatar');
+  if(av) av.textContent = did.replace('DR-','').substring(0,2).toUpperCase();
+
+  // Parse sessions
+  allSessions = sessions.map(s => ({
+    session_id: s[0] || 'N/A',
+    patient_code: s[1] || '—',
+    doctor_code: s[2] || '—',
+    symptoms: s[3] || '',
+    created_at: s[4] || '',
+    final_output: s[5] || ''
+  }));
+
+  updateStats();
+  renderTable(allSessions);
+};
+
+function getRisk(output){
+  if(!output) return 'N/A';
+  const upper = output.toUpperCase();
+  if(upper.includes('HIGH')) return 'HIGH';
+  if(upper.includes('MODERATE')) return 'MODERATE';
+  if(upper.includes('LOW')) return 'LOW';
+  return 'N/A';
+}
+
+function formatDate(dt){
+  if(!dt) return '—';
+  try{
+    const d = new Date(dt);
+    return d.toLocaleDateString('en-GB',{day:'2-digit',month:'short',year:'numeric'})+' '+d.toLocaleTimeString('en-US',{hour:'2-digit',minute:'2-digit'});
+  }catch(e){return dt.substring(0,16).replace('T',' ');}
+}
+
+function updateStats(){
+  const total = allSessions.length;
+  const high = allSessions.filter(s=>getRisk(s.final_output)==='HIGH').length;
+  const mod = allSessions.filter(s=>getRisk(s.final_output)==='MODERATE').length;
+  const low = allSessions.filter(s=>getRisk(s.final_output)==='LOW').length;
+  document.getElementById('totalCount').textContent = total;
+  document.getElementById('highCount').textContent = high;
+  document.getElementById('modCount').textContent = mod;
+  document.getElementById('lowCount').textContent = low;
+}
+
+function renderTable(data){
+  const body = document.getElementById('tableBody');
+  if(!data.length){body.innerHTML='<div class="empty">No sessions found.</div>';return;}
+  body.innerHTML = data.map(s=>{
+    const risk = getRisk(s.final_output);
+    const pillClass = risk==='HIGH'?'rhi':risk==='MODERATE'?'rmo':'rlo';
+    return `<div class="table-row" onclick="viewSession('${s.session_id}')">
+      <span class="session-id">${s.session_id}</span>
+      <span><div class="risk-pill ${pillClass}">${risk}</div></span>
+      <span style="color:#CBD5E1;font-weight:500">${s.patient_code}</span>
+      <span>${s.doctor_code}</span>
+      <span style="color:#94A3B8">${formatDate(s.created_at)}</span>
+      <span class="view-btn">→ View</span>
+    </div>`;
+  }).join('');
+}
+
+function setFilter(filter, btn){
+  currentFilter = filter;
+  document.querySelectorAll('.filter-btn').forEach(b=>b.classList.remove('active'));
+  btn.classList.add('active');
+  applyFilters();
+}
+
+function filterTable(){
+  applyFilters();
+}
+
+function applyFilters(){
+  const query = document.getElementById('searchInput').value.toLowerCase();
+  let filtered = allSessions;
+  if(currentFilter !== 'all'){
+    filtered = filtered.filter(s=>getRisk(s.final_output)===currentFilter);
+  }
+  if(query){
+    filtered = filtered.filter(s=>
+      s.session_id.toLowerCase().includes(query)||
+      s.patient_code.toLowerCase().includes(query)||
+      s.doctor_code.toLowerCase().includes(query)
+    );
+  }
+  renderTable(filtered);
+}
+
+function viewSession(sessionId){
+  alert('Session '+sessionId+'\nFull report viewer coming soon.\nFor now, view the latest assessment on the Dashboard.');
+}
+</script>
+</body>
+</html>
