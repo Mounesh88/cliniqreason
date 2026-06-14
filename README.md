@@ -6,7 +6,7 @@
 
 ## 🌐 Live Demo (Azure Deployment)
 
-👉 **[https://cliniqreason.azurewebsites.net](https://cliniqreason.azurewebsites.net)**
+👉 **[https://cliniqreason-production.up.railway.app](https://cliniqreason-production.up.railway.app)**
 
 ```
 Doctor ID : DR-DEMO-001
