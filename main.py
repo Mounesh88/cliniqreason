@@ -47,7 +47,15 @@ def login_post():
 
     # Demo credentials
     DEMO_DOCTORS = {
-        "DR-DEMO-001": "demo123"
+        "DR-DEMO-001": "demo123",
+        "DR-DEMO-002": "demo456",
+        "DR-DEMO-003": "demo789",
+        "DR-CARD-001": "card123",
+        "DR-CARD-002": "card456",
+        "DR-EMRG-001": "emrg123",
+        "DR-EMRG-002": "emrg456",
+        "DR-INT-001": "int123",
+        "DR-INT-002": "int456"
     }
 
     # Check demo credentials
