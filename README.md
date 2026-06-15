@@ -164,8 +164,17 @@ DATABASE_NAME=cliniqreason.db
 ## 🔑 Demo Credentials & Sample Patient
 
 ```
-Doctor ID : DR-DEMO-001
-Password  : demo123
+| Doctor ID    | Password  | Specialty          |
+|-------------|-----------|-------------------|
+| DR-DEMO-001 | demo123   | Emergency Medicine |
+| DR-DEMO-002 | demo456   | Emergency Medicine |
+| DR-DEMO-003 | demo789   | Emergency Medicine |
+| DR-CARD-001 | card123   | Cardiology         |
+| DR-CARD-002 | card456   | Cardiology         |
+| DR-EMRG-001 | emrg123   | Emergency Medicine |
+| DR-EMRG-002 | emrg456   | Emergency Medicine |
+| DR-INT-001  | int123    | Internal Medicine  |
+| DR-INT-002  | int456    | Internal Medicine  |
 
 --- Sample Patient ---
 Patient Code : PT-DEMO-001
